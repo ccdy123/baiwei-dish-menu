@@ -1044,7 +1044,7 @@
             return `
                 <div class="dish-card" data-name="${item.name}">
                     <div class="dish-img-wrapper">
-                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy" onerror="this.onerror=null;this.src='${IMG_FALLBACK}';">
+                        <img class="dish-img" src="${item.img}" alt="${item.name}" onerror="this.onerror=null;this.src='${IMG_FALLBACK}';">
                         <span class="dish-type-tag">${item.category}</span>
                         <button class="fav-btn ${fav ? 'active' : ''}" data-action="fav" data-name="${item.name}" title="${fav ? '取消收藏' : '收藏'}">${fav ? '❤' : '♡'}</button>
                     </div>
