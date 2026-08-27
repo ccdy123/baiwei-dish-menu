@@ -1398,10 +1398,132 @@
         function saveState(key, val) {
             try { localStorage.setItem(key, JSON.stringify(val)); }
             catch (e) { console.warn('localStorage 保存失败', e); }
+            schedulePush(); // 任何本地写入都触发 jsonbin 推送
         }
         let cart = loadState(STORAGE_KEYS.cart, []);
         let orders = loadState(STORAGE_KEYS.orders, []);
         let favorites = loadState(STORAGE_KEYS.favorites, []);
+
+        // ========== jsonbin.io 实时同步 ==========
+        // 注意：BIN_KEY 写在前端代码会暴露给所有访问者。
+        // 这是个人菜单应用、数据无隐私价值，可接受。如要更安全需后端中转。
+        const BIN_ID = '6a906618f5f4af5e294a61a9';
+        const BIN_KEY = '$2a$10$yOrP/LwVjvQSYw/n6KxRoOpjK207MGOfe7fWd/z8AV0btNdpJiGri';
+        const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        let pushDebounce = null;
+        let pushInFlight = false;
+        let pendingPush = false;
+        let isMerging = false;
+
+        function schedulePush() {
+            if (isMerging) return; // 合并远端数据时不触发 push，避免循环
+            if (pushDebounce) clearTimeout(pushDebounce);
+            pushDebounce = setTimeout(() => pushToBin(), 800);
+        }
+
+        async function pushToBin() {
+            if (pushInFlight) { pendingPush = true; return; }
+            pushInFlight = true;
+            try {
+                const payload = {
+                    v: 1,
+                    cart, orders, favorites,
+                    updatedAt: new Date().toISOString()
+                };
+                const res = await fetch(BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+                    body: JSON.stringify(payload)
+                });
+                return res.ok;
+            } catch (e) {
+                console.warn('push 失败', e);
+                return false;
+            } finally {
+                pushInFlight = false;
+                if (pendingPush) { pendingPush = false; return pushToBin(); }
+            }
+        }
+
+        async function pullFromBin() {
+            try {
+                const res = await fetch(BIN_URL + '/latest', {
+                    headers: { 'X-Master-Key': BIN_KEY }
+                });
+                if (!res.ok) return null;
+                const data = await res.json();
+                return data.record;
+            } catch (e) {
+                console.warn('pull 失败', e);
+                return null;
+            }
+        }
+
+        // 幂等合并：orders 按 id 取并集、favorites 取并集、cart 按 name 取并集且 qty 取较大值
+        function mergeFromRemote(remote) {
+            if (!remote) return false;
+            isMerging = true;
+            let changed = false;
+
+            if (Array.isArray(remote.orders)) {
+                const localIds = new Set(orders.map(o => o.id));
+                const newOnes = remote.orders.filter(o => !localIds.has(o.id));
+                if (newOnes.length > 0) {
+                    orders = orders.concat(newOnes);
+                    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    saveState(STORAGE_KEYS.orders, orders);
+                    changed = true;
+                }
+            }
+
+            if (Array.isArray(remote.favorites)) {
+                const localSet = new Set(favorites);
+                const before = favorites.length;
+                remote.favorites.forEach(n => { if (!localSet.has(n)) { favorites.push(n); localSet.add(n); } });
+                if (favorites.length !== before) {
+                    saveState(STORAGE_KEYS.favorites, favorites);
+                    changed = true;
+                }
+            }
+
+            if (Array.isArray(remote.cart)) {
+                let cartChanged = false;
+                remote.cart.forEach(r => {
+                    const local = cart.find(c => c.name === r.name);
+                    if (!local) { cart.push({ name: r.name, img: r.img, qty: r.qty }); cartChanged = true; }
+                    else if (r.qty > local.qty) { local.qty = r.qty; cartChanged = true; }
+                });
+                if (cartChanged) {
+                    saveState(STORAGE_KEYS.cart, cart);
+                    changed = true;
+                }
+            }
+
+            isMerging = false;
+            return changed;
+        }
+
+        function refreshAllViews() {
+            updateBadges();
+            renderMenu();
+            if (document.getElementById('viewCart').classList.contains('active')) renderCart();
+            if (document.getElementById('viewOrders').classList.contains('active')) renderOrders();
+            if (document.getElementById('viewFavorites').classList.contains('active')) renderFavorites();
+            if (typeof syncModalActions === 'function') syncModalActions();
+        }
+
+        async function syncFromRemote() {
+            const remote = await pullFromBin();
+            if (!remote) return;
+            if (mergeFromRemote(remote)) {
+                refreshAllViews();
+                showToast('☁ 已同步其他设备的更新');
+            }
+        }
+
+        // 启动时立即拉一次，然后每 8 秒轮询
+        syncFromRemote();
+        setInterval(syncFromRemote, 8000);
 
         // ========== Toast 提示 ==========
         const toastEl = document.getElementById('toast');
