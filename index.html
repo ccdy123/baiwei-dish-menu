@@ -26,6 +26,7 @@
             background: linear-gradient(135deg, #fef9f3 0%, #f5ebe0 100%);
             min-height: 100vh;
             padding: 0;
+            padding-bottom: calc(64px + env(safe-area-inset-bottom));
         }
 
         /* 顶部横幅 */
@@ -417,6 +418,366 @@
             background: #ccc;
             border-radius: 3px;
         }
+
+        /* ========== 新增功能样式 ========== */
+
+        /* 视图切换 */
+        .view { display: none; animation: fadeIn 0.25s ease; }
+        .view.active { display: block; }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 9px 0 7px;
+            color: #888;
+            font-size: 11px;
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-item .nav-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+            line-height: 1;
+        }
+        .nav-item.active { color: #c0392b; font-weight: 600; }
+        .nav-badge {
+            position: absolute;
+            top: 5px;
+            left: calc(50% + 6px);
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            min-width: 16px;
+            height: 16px;
+            line-height: 16px;
+            border-radius: 8px;
+            padding: 0 4px;
+            display: none;
+            transform: translateX(0);
+        }
+        .nav-badge.show { display: inline-block; }
+
+        /* 视图标题 */
+        .view-header {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 22px 20px 6px;
+            text-align: center;
+        }
+        .view-header h2 {
+            font-size: 22px;
+            color: #2c2c2c;
+            margin-bottom: 4px;
+        }
+        .view-header .view-subtitle { color: #999; font-size: 13px; }
+
+        /* 收藏按钮（卡片右上角） */
+        .fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 5;
+            line-height: 1;
+        }
+        .fav-btn:hover { background: rgba(0,0,0,0.7); transform: scale(1.1); }
+        .fav-btn.active { background: rgba(231,76,60,0.95); }
+
+        /* 卡片底部操作行 */
+        .dish-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            gap: 8px;
+        }
+        .add-cart-btn {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .add-cart-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+        .add-cart-btn.in-cart {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        /* 购物车 / 订单列表 */
+        .cart-list, .orders-list {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px 20px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            gap: 12px;
+        }
+        .cart-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid #c0392b;
+            background: white;
+            color: #c0392b;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        .qty-btn:hover { background: #c0392b; color: white; }
+        .qty-num { font-size: 15px; font-weight: 600; min-width: 20px; text-align: center; }
+        .cart-remove {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
+        }
+        .cart-remove:hover { color: #e74c3c; }
+
+        /* 购物车底部按钮 */
+        .cart-footer {
+            max-width: 800px;
+            margin: 20px auto 0;
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .checkout-btn {
+            flex: 2;
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(192,57,43,0.3);
+            transition: transform 0.2s;
+        }
+        .checkout-btn:hover { transform: translateY(-2px); }
+        .checkout-btn:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .clear-cart-btn {
+            flex: 1;
+            background: white;
+            color: #888;
+            border: 1.5px solid #ddd;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .clear-cart-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+
+        /* 订单卡片 */
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .order-time { font-size: 14px; color: #555; font-weight: 600; }
+        .order-total {
+            background: #fef9f3;
+            color: #c0392b;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .order-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            background: #faf6f0;
+            border-radius: 8px;
+            padding: 4px 10px 4px 4px;
+            gap: 6px;
+        }
+        .order-item img {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .order-item-name { font-size: 13px; color: #2c2c2c; }
+        .order-item-qty { font-size: 12px; color: #c0392b; font-weight: 600; }
+        .order-reorder {
+            margin-top: 12px;
+            background: none;
+            border: 1px solid #c0392b;
+            color: #c0392b;
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .order-reorder:hover { background: #c0392b; color: white; }
+
+        /* 详情弹窗底部动作按钮 */
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .modal-action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1.5px solid #ddd;
+            background: white;
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .modal-action-btn:hover { border-color: #c0392b; color: #c0392b; }
+        .modal-action-btn.primary {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            border-color: transparent;
+        }
+        .modal-action-btn.primary:hover { transform: translateY(-2px); }
+        .modal-action-btn.active-fav {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            border-color: transparent;
+        }
+        .modal-action-btn.in-cart {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            grid-column: 1 / -1;
+        }
+        .empty-state .empty-icon { font-size: 60px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state .empty-text { font-size: 16px; margin-bottom: 8px; }
+        .empty-state .empty-hint { font-size: 13px; color: #bbb; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            max-width: 90vw;
+            text-align: center;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .nav-item { font-size: 10px; }
+            .nav-item .nav-icon { font-size: 18px; }
+            .view-header h2 { font-size: 19px; }
+            .cart-item img { width: 56px; height: 56px; }
+            .cart-item-name { font-size: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -428,27 +789,61 @@
         <div class="count-badge">共收录 100 道经典家常菜</div>
     </div>
 
-    <!-- 搜索框 -->
-    <div class="search-container">
-        <span class="search-icon">🔍</span>
-        <input type="text" class="search-box" id="searchInput" placeholder="搜索菜名，如：红烧肉、番茄炒蛋...">
+    <!-- 菜单视图 -->
+    <div class="view view-menu active" id="viewMenu">
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-box" id="searchInput" placeholder="搜索菜名，如：红烧肉、番茄炒蛋...">
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-type="all">全部菜品</button>
+            <button class="filter-btn" data-type="meat">🥩 肉类硬菜</button>
+            <button class="filter-btn" data-type="fish">🦐 鱼虾海鲜</button>
+            <button class="filter-btn" data-type="egg">🥚 蛋类豆制品</button>
+            <button class="filter-btn" data-type="veg">🥬 时蔬小炒</button>
+            <button class="filter-btn" data-type="soup">🍲 汤羹类</button>
+            <button class="filter-btn" data-type="braise">🍖 焖烧下饭</button>
+            <button class="filter-btn" data-type="cold">🥗 凉拌菜</button>
+            <button class="filter-btn" data-type="staple">🍜 主食小吃</button>
+        </div>
+
+        <!-- 菜品网格 -->
+        <div class="menu-grid" id="menuGrid"></div>
     </div>
 
-    <!-- 分类筛选 -->
-    <div class="filter-bar" id="filterBar">
-        <button class="filter-btn active" data-type="all">全部菜品</button>
-        <button class="filter-btn" data-type="meat">🥩 肉类硬菜</button>
-        <button class="filter-btn" data-type="fish">🦐 鱼虾海鲜</button>
-        <button class="filter-btn" data-type="egg">🥚 蛋类豆制品</button>
-        <button class="filter-btn" data-type="veg">🥬 时蔬小炒</button>
-        <button class="filter-btn" data-type="soup">🍲 汤羹类</button>
-        <button class="filter-btn" data-type="braise">🍖 焖烧下饭</button>
-        <button class="filter-btn" data-type="cold">🥗 凉拌菜</button>
-        <button class="filter-btn" data-type="staple">🍜 主食小吃</button>
+    <!-- 购物车视图 -->
+    <div class="view view-cart" id="viewCart">
+        <div class="view-header">
+            <h2>🛒 我的点菜清单</h2>
+            <div class="view-subtitle">已选 <span id="cartCount">0</span> 道菜</div>
+        </div>
+        <div class="cart-list" id="cartList"></div>
+        <div class="cart-footer">
+            <button class="checkout-btn" id="checkoutBtn">提交订单</button>
+            <button class="clear-cart-btn" id="clearCartBtn">清空</button>
+        </div>
     </div>
 
-    <!-- 菜品网格 -->
-    <div class="menu-grid" id="menuGrid"></div>
+    <!-- 订单视图 -->
+    <div class="view view-orders" id="viewOrders">
+        <div class="view-header">
+            <h2>📋 我的订单</h2>
+            <div class="view-subtitle">共 <span id="ordersCount">0</span> 个订单</div>
+        </div>
+        <div class="orders-list" id="ordersList"></div>
+    </div>
+
+    <!-- 收藏视图 -->
+    <div class="view view-favorites" id="viewFavorites">
+        <div class="view-header">
+            <h2>❤ 我的收藏</h2>
+            <div class="view-subtitle">共 <span id="favCount">0</span> 道菜</div>
+        </div>
+        <div class="menu-grid" id="favoritesGrid"></div>
+    </div>
 
     <!-- 详情弹窗 -->
     <div class="modal-overlay" id="modalOverlay">
@@ -462,6 +857,10 @@
                 <p class="modal-desc" id="modalDesc"></p>
                 <div class="modal-section-title">烹饪小贴士</div>
                 <div class="modal-tips" id="modalTips"></div>
+                <div class="modal-actions">
+                    <button class="modal-action-btn" id="modalFavBtn">♡ 收藏</button>
+                    <button class="modal-action-btn primary" id="modalAddCartBtn">+ 加入点菜</button>
+                </div>
             </div>
         </div>
     </div>
@@ -470,6 +869,31 @@
     <div class="footer">
         <p>🍽️ 百道家常菜菜单大全 · 让每一餐都有滋有味</p>
     </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav" id="bottomNav">
+        <div class="nav-item active" data-view="menu">
+            <span class="nav-icon">🍳</span>
+            <span>菜单</span>
+        </div>
+        <div class="nav-item" data-view="cart">
+            <span class="nav-icon">🛒</span>
+            <span>点菜</span>
+            <span class="nav-badge" id="navCartBadge">0</span>
+        </div>
+        <div class="nav-item" data-view="orders">
+            <span class="nav-icon">📋</span>
+            <span>订单</span>
+        </div>
+        <div class="nav-item" data-view="favorites">
+            <span class="nav-icon">❤</span>
+            <span>收藏</span>
+            <span class="nav-badge" id="navFavBadge">0</span>
+        </div>
+    </nav>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
 
     <script>
         // 100道家常菜完整数据
@@ -594,6 +1018,9 @@
         ];
 
         const menuGrid = document.getElementById('menuGrid');
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const cartList = document.getElementById('cartList');
+        const ordersList = document.getElementById('ordersList');
         const searchInput = document.getElementById('searchInput');
         const filterBar = document.getElementById('filterBar');
         const modalOverlay = document.getElementById('modalOverlay');
@@ -607,7 +1034,55 @@
         let currentFilter = 'all';
         let currentSearch = '';
 
-        // 渲染菜品列表
+        // 通用菜品卡片 HTML 模板
+        function dishCardHtml(item) {
+            const fav = isFavorite(item.name);
+            const inCart = getCartQty(item.name);
+            return `
+                <div class="dish-card" data-name="${item.name}">
+                    <div class="dish-img-wrapper">
+                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy">
+                        <span class="dish-type-tag">${item.category}</span>
+                        <button class="fav-btn ${fav ? 'active' : ''}" data-action="fav" data-name="${item.name}" title="${fav ? '取消收藏' : '收藏'}">${fav ? '❤' : '♡'}</button>
+                    </div>
+                    <div class="dish-info">
+                        <div class="dish-name">${item.name}</div>
+                        <div class="dish-desc-short">${item.desc.substring(0, 40)}...</div>
+                        <div class="dish-actions">
+                            <span class="view-detail">查看详情 →</span>
+                            <button class="add-cart-btn ${inCart ? 'in-cart' : ''}" data-action="add-cart" data-name="${item.name}">
+                                ${inCart ? '✓ 已选 ' + inCart : '+ 点菜'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 绑定卡片区域事件（事件委托：收藏 / 加车 / 查看详情）
+        function bindCardEvents(container) {
+            container.addEventListener('click', (e) => {
+                const favBtn = e.target.closest('[data-action="fav"]');
+                const addBtn = e.target.closest('[data-action="add-cart"]');
+                if (favBtn) {
+                    e.stopPropagation();
+                    toggleFavorite(favBtn.dataset.name);
+                    return;
+                }
+                if (addBtn) {
+                    e.stopPropagation();
+                    addToCart(addBtn.dataset.name);
+                    return;
+                }
+                const card = e.target.closest('.dish-card');
+                if (card) {
+                    const dish = menuData.find(it => it.name === card.dataset.name);
+                    if (dish) openModal(dish);
+                }
+            });
+        }
+
+        // 渲染菜品列表（菜单视图）
         function renderMenu() {
             let filtered = menuData;
 
@@ -628,38 +1103,52 @@
                 return;
             }
 
-            menuGrid.innerHTML = filtered.map(item => `
-                <div class="dish-card" data-name="${item.name}">
-                    <div class="dish-img-wrapper">
-                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy">
-                        <span class="dish-type-tag">${item.category}</span>
-                    </div>
-                    <div class="dish-info">
-                        <div class="dish-name">${item.name}</div>
-                        <div class="dish-desc-short">${item.desc.substring(0, 40)}...</div>
-                        <span class="view-detail">查看详情 →</span>
-                    </div>
-                </div>
-            `).join('');
+            menuGrid.innerHTML = filtered.map(dishCardHtml).join('');
+        }
 
-            // 绑定卡片点击事件
-            document.querySelectorAll('.dish-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const name = card.dataset.name;
-                    const dish = menuData.find(item => item.name === name);
-                    if (dish) openModal(dish);
-                });
-            });
+        // 渲染收藏夹
+        function renderFavorites() {
+            const favItems = menuData.filter(it => isFavorite(it.name));
+            document.getElementById('favCount').textContent = favItems.length;
+            if (favItems.length === 0) {
+                favoritesGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🍃</div>
+                        <div class="empty-text">还没有收藏的菜</div>
+                        <div class="empty-hint">在菜单里点右上角的 ♡ 收藏想吃的菜</div>
+                    </div>`;
+                return;
+            }
+            favoritesGrid.innerHTML = favItems.map(dishCardHtml).join('');
+        }
+
+        // 弹窗当前菜品引用 + 元素引用
+        let currentModalDish = null;
+        const modalFavBtn = document.getElementById('modalFavBtn');
+        const modalAddCartBtn = document.getElementById('modalAddCartBtn');
+
+        // 同步弹窗底部动作按钮的状态
+        function syncModalActions() {
+            if (!currentModalDish) return;
+            const name = currentModalDish.name;
+            const fav = isFavorite(name);
+            const qty = getCartQty(name);
+            modalFavBtn.textContent = fav ? '❤ 已收藏' : '♡ 收藏';
+            modalFavBtn.classList.toggle('active-fav', fav);
+            modalAddCartBtn.textContent = qty > 0 ? `✓ 已加入 (${qty})` : '+ 加入点菜';
+            modalAddCartBtn.classList.toggle('in-cart', qty > 0);
         }
 
         // 打开详情弹窗
         function openModal(dish) {
+            currentModalDish = dish;
             modalImg.src = dish.img;
             modalImg.alt = dish.name;
             modalTitle.textContent = dish.name;
             modalCategory.textContent = dish.category;
             modalDesc.textContent = dish.desc;
             modalTips.textContent = dish.tips;
+            syncModalActions();
             modalOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -693,6 +1182,269 @@
             currentSearch = e.target.value.trim();
             renderMenu();
         });
+
+        // ========== 状态管理（localStorage 持久化）==========
+        const STORAGE_KEYS = { cart: 'baiwei_cart', orders: 'baiwei_orders', favorites: 'baiwei_favorites' };
+        function loadState(key, def) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : def;
+            } catch (e) { return def; }
+        }
+        function saveState(key, val) {
+            try { localStorage.setItem(key, JSON.stringify(val)); }
+            catch (e) { console.warn('localStorage 保存失败', e); }
+        }
+        let cart = loadState(STORAGE_KEYS.cart, []);
+        let orders = loadState(STORAGE_KEYS.orders, []);
+        let favorites = loadState(STORAGE_KEYS.favorites, []);
+
+        // ========== Toast 提示 ==========
+        const toastEl = document.getElementById('toast');
+        let toastTimer = null;
+        function showToast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+        }
+
+        // ========== 收藏 ==========
+        function isFavorite(name) { return favorites.includes(name); }
+        function toggleFavorite(name) {
+            const idx = favorites.indexOf(name);
+            if (idx >= 0) {
+                favorites.splice(idx, 1);
+                showToast(`已取消收藏「${name}」`);
+            } else {
+                favorites.push(name);
+                showToast(`❤ 已收藏「${name}」`);
+            }
+            saveState(STORAGE_KEYS.favorites, favorites);
+            updateBadges();
+            renderMenu();
+            if (document.getElementById('viewFavorites').classList.contains('active')) renderFavorites();
+            syncModalActions();
+        }
+
+        // ========== 购物车 ==========
+        function getCartQty(name) {
+            const item = cart.find(it => it.name === name);
+            return item ? item.qty : 0;
+        }
+        function getCartTotal() { return cart.reduce((s, it) => s + it.qty, 0); }
+        function addToCart(name) {
+            const dish = menuData.find(it => it.name === name);
+            if (!dish) return;
+            const existing = cart.find(it => it.name === name);
+            if (existing) existing.qty += 1;
+            else cart.push({ name: dish.name, img: dish.img, qty: 1 });
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderMenu();
+            if (document.getElementById('viewCart').classList.contains('active')) renderCart();
+            syncModalActions();
+            showToast(`已加入「${name}」(共 ${getCartQty(name)} 份)`);
+        }
+        function updateCartQty(name, delta) {
+            const item = cart.find(it => it.name === name);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(it => it.name !== name);
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderCart();
+            renderMenu();
+            syncModalActions();
+        }
+        function removeFromCart(name) {
+            cart = cart.filter(it => it.name !== name);
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderCart();
+            renderMenu();
+            syncModalActions();
+            showToast(`已移除「${name}」`);
+        }
+        function clearCart() {
+            if (cart.length === 0) { showToast('点菜清单已经是空的'); return; }
+            if (!confirm('确定清空所有已选菜品吗？')) return;
+            cart = [];
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderCart();
+            renderMenu();
+            syncModalActions();
+            showToast('已清空点菜清单');
+        }
+
+        // ========== 订单 ==========
+        function confirmOrder() {
+            if (cart.length === 0) { showToast('点菜清单为空，先去加点几道菜吧'); return; }
+            const total = getCartTotal();
+            if (!confirm(`确认提交订单？共 ${cart.length} 道菜 / ${total} 份`)) return;
+            const order = {
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+                items: cart.map(it => ({ name: it.name, img: it.img, qty: it.qty }))
+            };
+            orders.unshift(order);
+            saveState(STORAGE_KEYS.orders, orders);
+            cart = [];
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderCart();
+            renderMenu();
+            showToast(`🎉 订单已提交，共 ${total} 份菜`);
+            switchView('orders');
+        }
+        function reorderFromOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            order.items.forEach(it => {
+                const existing = cart.find(c => c.name === it.name);
+                if (existing) existing.qty += it.qty;
+                else cart.push({ name: it.name, img: it.img, qty: it.qty });
+            });
+            saveState(STORAGE_KEYS.cart, cart);
+            updateBadges();
+            renderCart();
+            renderMenu();
+            showToast(`已加入 ${order.items.length} 道菜到点菜清单`);
+            switchView('cart');
+        }
+
+        // ========== 渲染：购物车 ==========
+        function renderCart() {
+            const total = getCartTotal();
+            document.getElementById('cartCount').textContent = total;
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (cart.length === 0) {
+                cartList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🛒</div>
+                        <div class="empty-text">点菜清单还是空的</div>
+                        <div class="empty-hint">去菜单挑几道想吃的菜吧</div>
+                    </div>`;
+                checkoutBtn.disabled = true;
+                return;
+            }
+            checkoutBtn.disabled = false;
+            cartList.innerHTML = cart.map(it => `
+                <div class="cart-item">
+                    <img src="${it.img}" alt="${it.name}">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${it.name}</div>
+                        <div class="qty-controls">
+                            <button class="qty-btn" data-act="dec" data-name="${it.name}">−</button>
+                            <span class="qty-num">${it.qty}</span>
+                            <button class="qty-btn" data-act="inc" data-name="${it.name}">+</button>
+                        </div>
+                    </div>
+                    <button class="cart-remove" data-act="del" data-name="${it.name}" title="移除">×</button>
+                </div>
+            `).join('');
+        }
+
+        // ========== 渲染：订单 ==========
+        function formatDateTime(iso) {
+            const d = new Date(iso);
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+        function renderOrders() {
+            document.getElementById('ordersCount').textContent = orders.length;
+            if (orders.length === 0) {
+                ordersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-text">还没有订单</div>
+                        <div class="empty-hint">去点菜清单提交一单试试</div>
+                    </div>`;
+                return;
+            }
+            ordersList.innerHTML = orders.map(o => {
+                const total = o.items.reduce((s, it) => s + it.qty, 0);
+                const itemsHtml = o.items.map(it => `
+                    <div class="order-item">
+                        <img src="${it.img}" alt="${it.name}">
+                        <span class="order-item-name">${it.name}</span>
+                        <span class="order-item-qty">×${it.qty}</span>
+                    </div>
+                `).join('');
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-time">${formatDateTime(o.createdAt)}</span>
+                            <span class="order-total">${total} 份 / ${o.items.length} 道菜</span>
+                        </div>
+                        <div class="order-items">${itemsHtml}</div>
+                        <button class="order-reorder" data-reorder="${o.id}">再来一单</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== 视图切换 ==========
+        const VIEW_IDS = { menu: 'viewMenu', cart: 'viewCart', orders: 'viewOrders', favorites: 'viewFavorites' };
+        function switchView(view) {
+            Object.entries(VIEW_IDS).forEach(([k, id]) => {
+                document.getElementById(id).classList.toggle('active', k === view);
+            });
+            document.querySelectorAll('.nav-item').forEach(it => {
+                it.classList.toggle('active', it.dataset.view === view);
+            });
+            if (view === 'cart') renderCart();
+            else if (view === 'orders') renderOrders();
+            else if (view === 'favorites') renderFavorites();
+            else if (view === 'menu') renderMenu();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ========== 徽章更新 ==========
+        function updateBadges() {
+            const cartTotal = getCartTotal();
+            const cartBadge = document.getElementById('navCartBadge');
+            cartBadge.textContent = cartTotal;
+            cartBadge.classList.toggle('show', cartTotal > 0);
+            const favBadge = document.getElementById('navFavBadge');
+            favBadge.textContent = favorites.length;
+            favBadge.classList.toggle('show', favorites.length > 0);
+        }
+
+        // ========== 事件绑定 ==========
+        // 底部导航
+        document.getElementById('bottomNav').addEventListener('click', (e) => {
+            const item = e.target.closest('.nav-item');
+            if (item) switchView(item.dataset.view);
+        });
+        // 购物车数量增减 / 移除（事件委托）
+        cartList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-act]');
+            if (!btn) return;
+            const name = btn.dataset.name;
+            const act = btn.dataset.act;
+            if (act === 'inc') updateCartQty(name, 1);
+            else if (act === 'dec') updateCartQty(name, -1);
+            else if (act === 'del') removeFromCart(name);
+        });
+        // 提交订单 / 清空
+        document.getElementById('checkoutBtn').addEventListener('click', confirmOrder);
+        document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+        // 订单"再来一单"（事件委托）
+        ordersList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-reorder]');
+            if (btn) reorderFromOrder(parseInt(btn.dataset.reorder));
+        });
+        // 弹窗底部动作按钮
+        modalFavBtn.addEventListener('click', () => { if (currentModalDish) toggleFavorite(currentModalDish.name); });
+        modalAddCartBtn.addEventListener('click', () => { if (currentModalDish) addToCart(currentModalDish.name); });
+        // 卡片事件委托（菜单 + 收藏夹）
+        bindCardEvents(menuGrid);
+        bindCardEvents(favoritesGrid);
+
+        // 初始徽章
+        updateBadges();
 
         // 初始渲染
         renderMenu();
