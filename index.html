@@ -700,6 +700,22 @@
             transition: all 0.2s;
         }
         .order-reorder:hover { background: #c0392b; color: white; }
+        .order-delete {
+            background: #fff0f0;
+            border: 1px solid #f2b5b0;
+            color: #c0392b;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .order-delete:hover { background: #c0392b; color: white; border-color: #c0392b; transform: scale(1.1); }
 
         /* 详情弹窗底部动作按钮 */
         .modal-actions {
@@ -943,6 +959,108 @@
             line-height: 1.6;
         }
         .sync-confirm strong { color: #c0392b; }
+
+        /* 新增菜品按钮 */
+        .add-dish-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(39,174,96,0.3);
+            transition: all 0.25s;
+        }
+        .add-dish-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(39,174,96,0.4); }
+        .add-dish-btn:active { transform: scale(0.97); }
+
+        /* 新增菜品弹窗 */
+        .add-dish-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .add-dish-overlay.active { display: flex; }
+        .add-dish-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            animation: popIn 0.25s ease-out;
+            margin: auto 0;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .add-dish-modal h2 {
+            color: #c0392b;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+        .ad-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            background: white;
+            font-family: inherit;
+        }
+        .ad-input:focus { outline: none; border-color: #c0392b; box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
+        .ad-select { cursor: pointer; appearance: none; background: white url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 4 5%22 fill=%22%23c0392b%22><path d=%22M2 5L0 0h4z%22/></svg>') no-repeat right 14px center / 10px; padding-right: 36px; }
+        .ad-upload-box {
+            display: block;
+            cursor: pointer;
+        }
+        .ad-preview {
+            width: 100%;
+            height: 160px;
+            border: 2px dashed #d0d0d0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #bbb;
+            background: #fafafa;
+            overflow: hidden;
+            transition: all 0.2s;
+            object-fit: cover;
+        }
+        .ad-preview:hover { border-color: #c0392b; background: #fff5f5; }
+        .ad-preview.has-img { border-style: solid; border-color: #e0e0e0; padding: 0; }
+        .ad-preview.has-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 自定义菜品卡片上的"自创"角标 */
+        .dish-custom-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(39,174,96,0.35);
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
@@ -974,6 +1092,11 @@
             <button class="filter-btn" data-type="braise">🍖 焖烧下饭</button>
             <button class="filter-btn" data-type="cold">🥗 凉拌菜</button>
             <button class="filter-btn" data-type="staple">🍜 主食小吃</button>
+        </div>
+
+        <!-- 新增菜品按钮 -->
+        <div style="max-width:1200px;margin:10px auto 0;padding:0 20px;">
+            <button class="add-dish-btn" id="addDishBtn">➕ 新增菜品</button>
         </div>
 
         <!-- 菜品网格 -->
@@ -1093,6 +1216,55 @@
                 <textarea class="sync-textarea" id="syncImportTextarea" placeholder="粘贴同步链接，如 https://ccdy123.github.io/baiwei-dish-menu/#sync=eyJ2Ij..."></textarea>
                 <button class="sync-import-btn" id="syncImportBtn">导入</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 新增菜品弹窗 -->
+    <div class="add-dish-overlay" id="addDishOverlay">
+        <div class="add-dish-modal">
+            <button class="sync-close" id="addDishClose">×</button>
+            <h2>➕ 新增菜品</h2>
+            <div class="sync-subtitle">上传你自己的私家菜，永久保留并跨设备同步</div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">菜品名称</div>
+                <input type="text" class="ad-input" id="adName" placeholder="例如：外婆红烧肉">
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">选择分类</div>
+                <select class="ad-input ad-select" id="adType">
+                    <option value="meat">🥩 肉类硬菜</option>
+                    <option value="fish">🦐 鱼虾海鲜</option>
+                    <option value="egg">🥚 蛋类豆制品</option>
+                    <option value="veg">🥬 时蔬小炒</option>
+                    <option value="soup">🍲 汤羹类</option>
+                    <option value="braise">🍖 焖烧下饭</option>
+                    <option value="cold">🥗 凉拌菜</option>
+                    <option value="staple">🍜 主食小吃</option>
+                </select>
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">菜品图片</div>
+                <div class="sync-section-hint">可选，不上传会用默认占位图。建议选小于 1MB 的图片。</div>
+                <label class="ad-upload-box" for="adFile">
+                    <div id="adPreview" class="ad-preview">📷<br><span style="font-size:12px;color:#888;">点击选择图片</span></div>
+                    <input type="file" id="adFile" accept="image/*" hidden>
+                </label>
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">制作方法（做法步骤）</div>
+                <textarea class="sync-textarea" id="adDesc" rows="5" placeholder="例如：五花肉切块焯水，锅中放少许油，加冰糖炒出糖色..."></textarea>
+            </div>
+
+            <div class="sync-section">
+                <div class="sync-section-title">小贴士（可选）</div>
+                <textarea class="sync-textarea" id="adTips" rows="3" placeholder="例如：选三层分明的五花肉最佳；炒糖色小火慢炒..."></textarea>
+            </div>
+
+            <button class="sync-import-btn" id="adSubmit" style="width:100%;margin-top:10px;">✅ 保存菜品（上传后永久保留）</button>
         </div>
     </div>
 
@@ -1218,6 +1390,31 @@
             {name:"椒盐虾",type:"fish",category:"特色风味",img:"images/椒盐虾.jpg",desc:"大虾开背去虾线，裹淀粉，下油锅炸至金黄酥脆。锅留底油，下蒜末、辣椒圈、椒盐，倒入大虾翻炒均匀。干香咸鲜，连壳都能吃。",tips:"虾要炸两次，第二次复炸更酥；椒盐可以自制：花椒+盐炒香磨碎；蒜末炒至金黄更香。"}
         ];
 
+        // 分类映射（type -> 中文分类名）
+        const CATEGORY_MAP = {
+            meat: '肉类硬菜', fish: '鱼虾海鲜', egg: '蛋类豆制品',
+            veg: '时蔬小炒', soup: '汤羹类', braise: '焖烧下饭',
+            cold: '凉拌菜', staple: '主食小吃'
+        };
+        // 默认占位图（用户不上传图片时使用）
+        const DEFAULT_DISH_IMG = "data:image/svg+xml;utf8," + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3ea"/><stop offset="1" stop-color="#ffe2cf"/></linearGradient></defs><rect width="800" height="600" fill="url(#g)"/><text x="400" y="305" text-anchor="middle" font-size="120">🍽</text><text x="400" y="370" text-anchor="middle" font-size="28" fill="#c0392b" font-family="sans-serif" font-weight="600">私家菜</text></svg>'
+        );
+        // 自定义菜品（用户自创），存 localStorage + jsonbin 跨设备同步
+        let customDishes = [];
+
+        // 单一事实来源：内置 100 道 + 用户自定义菜品
+        function getFullMenu() { return menuData.concat(customDishes); }
+
+        // 根据菜名查完整菜品（统一查找函数，避免多处写 find）
+        function findDishByName(name) { return getFullMenu().find(it => it.name === name); }
+
+        // 更新顶部收录数量（含自定义菜品）
+        function updateCountBadge() {
+            const el = document.querySelector('.count-badge');
+            if (el) el.textContent = `共收录 ${getFullMenu().length} 道菜`;
+        }
+
         const menuGrid = document.getElementById('menuGrid');
         const favoritesGrid = document.getElementById('favoritesGrid');
         const cartList = document.getElementById('cartList');
@@ -1242,11 +1439,13 @@
         function dishCardHtml(item) {
             const fav = isFavorite(item.name);
             const inCart = getCartQty(item.name);
+            const isCustom = item.custom === true;
             return `
                 <div class="dish-card" data-name="${item.name}">
                     <div class="dish-img-wrapper">
                         <img class="dish-img" src="${item.img}" alt="${item.name}" onerror="this.onerror=null;this.src='${IMG_FALLBACK}';">
                         <span class="dish-type-tag">${item.category}</span>
+                        ${isCustom ? '<span class="dish-custom-tag">✦ 自创</span>' : ''}
                         <button class="fav-btn ${fav ? 'active' : ''}" data-action="fav" data-name="${item.name}" title="${fav ? '取消收藏' : '收藏'}">${fav ? '❤' : '♡'}</button>
                     </div>
                     <div class="dish-info">
@@ -1280,7 +1479,7 @@
                 }
                 const card = e.target.closest('.dish-card');
                 if (card) {
-                    const dish = menuData.find(it => it.name === card.dataset.name);
+                    const dish = findDishByName(card.dataset.name);
                     if (dish) openModal(dish);
                 }
             });
@@ -1288,7 +1487,7 @@
 
         // 渲染菜品列表（菜单视图）
         function renderMenu() {
-            let filtered = menuData;
+            let filtered = getFullMenu();
 
             if (currentFilter !== 'all') {
                 filtered = filtered.filter(item => item.type === currentFilter);
@@ -1308,11 +1507,12 @@
             }
 
             menuGrid.innerHTML = filtered.map(dishCardHtml).join('');
+            updateCountBadge();
         }
 
         // 渲染收藏夹
         function renderFavorites() {
-            const favItems = menuData.filter(it => isFavorite(it.name));
+            const favItems = getFullMenu().filter(it => isFavorite(it.name));
             document.getElementById('favCount').textContent = favItems.length;
             if (favItems.length === 0) {
                 favoritesGrid.innerHTML = `
@@ -1388,7 +1588,14 @@
         });
 
         // ========== 状态管理（localStorage 持久化）==========
-        const STORAGE_KEYS = { cart: 'baiwei_cart', orders: 'baiwei_orders', favorites: 'baiwei_favorites' };
+        const STORAGE_KEYS = { cart: 'baiwei_cart', orders: 'baiwei_orders', favorites: 'baiwei_favorites', custom: 'baiwei_custom_dishes' };
+        // 加载自定义菜品（在 STORAGE_KEYS 定义后立即加载，保证 getFullMenu 有数据）
+        customDishes = loadState(STORAGE_KEYS.custom, []);
+        // 保存自定义菜品（触发 jsonbin 推送）
+        function saveCustomDishes(list) {
+            customDishes = list;
+            saveState(STORAGE_KEYS.custom, customDishes);
+        }
         function loadState(key, def) {
             try {
                 const raw = localStorage.getItem(key);
@@ -1426,8 +1633,8 @@
             pushInFlight = true;
             try {
                 const payload = {
-                    v: 1,
-                    cart, orders, favorites,
+                    v: 2,
+                    cart, orders, favorites, customDishes,
                     updatedAt: new Date().toISOString()
                 };
                 const res = await fetch(BIN_URL, {
@@ -1499,6 +1706,32 @@
                 }
             }
 
+            // 自定义菜品：按 name 取并集
+            if (Array.isArray(remote.customDishes) && remote.customDishes.length > 0) {
+                const localNames = new Set(customDishes.map(d => d.name));
+                let newCount = 0;
+                remote.customDishes.forEach(d => {
+                    if (d && d.name && !localNames.has(d.name)) {
+                        customDishes.push({
+                            name: d.name,
+                            type: d.type || 'meat',
+                            category: d.category || CATEGORY_MAP[d.type] || '肉类硬菜',
+                            img: d.img || DEFAULT_DISH_IMG,
+                            desc: d.desc || '（暂无做法描述）',
+                            tips: d.tips || '',
+                            custom: true,
+                            createdAt: d.createdAt || new Date().toISOString()
+                        });
+                        localNames.add(d.name);
+                        newCount++;
+                    }
+                });
+                if (newCount > 0) {
+                    saveCustomDishes(customDishes);
+                    changed = true;
+                }
+            }
+
             isMerging = false;
             return changed;
         }
@@ -1524,6 +1757,127 @@
         // 启动时立即拉一次，然后每 8 秒轮询
         syncFromRemote();
         setInterval(syncFromRemote, 8000);
+
+        // ========== 新增菜品逻辑 ==========
+        // 图片转 base64：限制最大尺寸（最长边 800px）、JPEG 质量 0.75，防止 JSON 过大
+        // 返回 Promise<dataURL:string>
+        function compressImage(file, maxSize = 800, quality = 0.75) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('读取图片失败'));
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('解析图片失败'));
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxSize || height > maxSize) {
+                            if (width >= height) { height = Math.round(height * (maxSize / width)); width = maxSize; }
+                            else { width = Math.round(width * (maxSize / height)); height = maxSize; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const addDishOverlay = document.getElementById('addDishOverlay');
+        const addDishClose = document.getElementById('addDishClose');
+        const addDishBtn = document.getElementById('addDishBtn');
+        const adName = document.getElementById('adName');
+        const adType = document.getElementById('adType');
+        const adFile = document.getElementById('adFile');
+        const adPreview = document.getElementById('adPreview');
+        const adDesc = document.getElementById('adDesc');
+        const adTips = document.getElementById('adTips');
+        const adSubmit = document.getElementById('adSubmit');
+        let adSelectedImg = null; // 当前已选图片 dataURL
+
+        function openAddDish() {
+            adName.value = '';
+            adType.value = 'meat';
+            adDesc.value = '';
+            adTips.value = '';
+            adFile.value = '';
+            adSelectedImg = null;
+            adPreview.classList.remove('has-img');
+            adPreview.innerHTML = '📷<br><span style="font-size:12px;color:#888;">点击选择图片</span>';
+            addDishOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => adName.focus(), 150);
+        }
+        function closeAddDish() {
+            addDishOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        addDishBtn.addEventListener('click', openAddDish);
+        addDishClose.addEventListener('click', closeAddDish);
+        addDishOverlay.addEventListener('click', (e) => { if (e.target === addDishOverlay) closeAddDish(); });
+
+        // 图片预览
+        adFile.addEventListener('change', async () => {
+            const file = adFile.files && adFile.files[0];
+            if (!file) return;
+            if (!/^image\//.test(file.type)) { showToast('请选择图片文件'); return; }
+            if (file.size > 5 * 1024 * 1024) { showToast('图片太大，请选小于 5MB 的图片'); return; }
+            adPreview.innerHTML = '⏳ 压缩中...';
+            try {
+                const dataURL = await compressImage(file);
+                adSelectedImg = dataURL;
+                adPreview.classList.add('has-img');
+                adPreview.innerHTML = `<img src="${dataURL}" alt="预览">`;
+            } catch (e) {
+                adPreview.classList.remove('has-img');
+                adPreview.innerHTML = '❌<br><span style="font-size:12px;color:#c0392b;">图片处理失败</span>';
+                adSelectedImg = null;
+            }
+        });
+
+        // 提交新增菜品
+        adSubmit.addEventListener('click', () => {
+            const name = adName.value.trim();
+            if (!name) { showToast('请输入菜品名称'); adName.focus(); return; }
+            const desc = adDesc.value.trim();
+            if (!desc) { showToast('请填写制作方法（做法步骤）'); adDesc.focus(); return; }
+            // 查重（不允许和已有菜/自定义菜重名）
+            if (findDishByName(name)) {
+                if (!confirm(`已有同名菜品「${name}」，仍要新增一个吗？`)) return;
+            }
+            const type = adType.value;
+            const category = CATEGORY_MAP[type] || '肉类硬菜';
+            const img = adSelectedImg || DEFAULT_DISH_IMG;
+            const tips = adTips.value.trim();
+
+            const dish = {
+                name, type, category, img,
+                desc: desc,
+                tips: tips || '',
+                custom: true,
+                createdAt: new Date().toISOString()
+            };
+
+            // 检查 base64 图片大小，避免 jsonbin 超限（jsonbin 单 bin 免费版 ~1MB）
+            const approxSize = JSON.stringify(dish).length; // 字符数 ≈ UTF-8 字节
+            if (approxSize > 600 * 1024) {
+                if (!confirm(`⚠ 这道菜数据较大（${(approxSize/1024).toFixed(0)}KB），多次新增可能超出存储限制。\n建议图片选更小一些。\n\n仍要继续吗？`)) return;
+            }
+
+            saveCustomDishes(customDishes.concat([dish]));
+            updateCountBadge();
+            renderMenu();
+            if (document.getElementById('viewFavorites').classList.contains('active')) renderFavorites();
+            closeAddDish();
+            showToast(`✅ 已新增「${name}」，已永久保存并同步`);
+            // 切到对应分类看效果
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
+            currentFilter = type;
+            switchView('menu');
+        });
 
         // ========== Toast 提示 ==========
         const toastEl = document.getElementById('toast');
@@ -1560,7 +1914,7 @@
         }
         function getCartTotal() { return cart.reduce((s, it) => s + it.qty, 0); }
         function addToCart(name) {
-            const dish = menuData.find(it => it.name === name);
+            const dish = findDishByName(name);
             if (!dish) return;
             const existing = cart.find(it => it.name === name);
             if (existing) existing.qty += 1;
@@ -1640,6 +1994,18 @@
             switchView('cart');
         }
 
+        // 删除订单
+        function deleteOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            const total = order.items.reduce((s, it) => s + it.qty, 0);
+            if (!confirm(`确认删除此订单？\n时间：${formatDateTime(order.createdAt)}\n共 ${order.items.length} 道菜 / ${total} 份\n\n删除后不可恢复。`)) return;
+            orders = orders.filter(o => o.id !== orderId);
+            saveState(STORAGE_KEYS.orders, orders);
+            renderOrders();
+            showToast('🗑 订单已删除');
+        }
+
         // ========== 渲染：购物车 ==========
         function renderCart() {
             const total = getCartTotal();
@@ -1702,7 +2068,10 @@
                     <div class="order-card">
                         <div class="order-header">
                             <span class="order-time">${formatDateTime(o.createdAt)}</span>
-                            <span class="order-total">${total} 份 / ${o.items.length} 道菜</span>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span class="order-total">${total} 份 / ${o.items.length} 道菜</span>
+                                <button class="order-delete" data-delorder="${o.id}" title="删除订单">🗑</button>
+                            </div>
                         </div>
                         <div class="order-items">${itemsHtml}</div>
                         <button class="order-reorder" data-reorder="${o.id}">再来一单</button>
@@ -1757,10 +2126,12 @@
         // 提交订单 / 清空
         document.getElementById('checkoutBtn').addEventListener('click', confirmOrder);
         document.getElementById('clearCartBtn').addEventListener('click', clearCart);
-        // 订单"再来一单"（事件委托）
+        // 订单"再来一单" / 删除（事件委托）
         ordersList.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-reorder]');
-            if (btn) reorderFromOrder(parseInt(btn.dataset.reorder));
+            const rbtn = e.target.closest('[data-reorder]');
+            if (rbtn) { reorderFromOrder(parseInt(rbtn.dataset.reorder)); return; }
+            const dbtn = e.target.closest('[data-delorder]');
+            if (dbtn) deleteOrder(parseInt(dbtn.dataset.delorder));
         });
         // 弹窗底部动作按钮
         modalFavBtn.addEventListener('click', () => { if (currentModalDish) toggleFavorite(currentModalDish.name); });
@@ -1794,10 +2165,11 @@
         // 编码当前所有数据为 base64
         function encodeSyncData() {
             const data = {
-                v: 1,
+                v: 2,
                 cart: cart,
                 orders: orders,
                 favorites: favorites,
+                customDishes: customDishes,
                 exportedAt: new Date().toISOString()
             };
             return b64encode(JSON.stringify(data));
@@ -1896,12 +2268,14 @@
             const cartTotal = (data.cart || []).reduce((s, it) => s + (it.qty || 0), 0);
             const orderCount = (data.orders || []).length;
             const favCount = (data.favorites || []).length;
+            const customCount = (data.customDishes || []).length;
             const exportedAt = data.exportedAt ? new Date(data.exportedAt).toLocaleString('zh-CN') : '未知';
 
             const msg = `确认导入以下数据？\n\n` +
                         `🛒 购物车：${cartCount} 道菜 / 共 ${cartTotal} 份\n` +
                         `📋 订单：${orderCount} 个\n` +
                         `❤ 收藏：${favCount} 道菜\n` +
+                        `🍳 自定义菜品：${customCount} 道\n` +
                         `📅 导出时间：${exportedAt}\n\n` +
                         `⚠️ 这会覆盖当前设备的数据！`;
             if (!confirm(msg)) return;
@@ -1909,10 +2283,13 @@
             cart = data.cart || [];
             orders = data.orders || [];
             favorites = data.favorites || [];
+            customDishes = data.customDishes ? data.customDishes.map(d => Object.assign({ custom: true }, d)) : [];
             saveState(STORAGE_KEYS.cart, cart);
             saveState(STORAGE_KEYS.orders, orders);
             saveState(STORAGE_KEYS.favorites, favorites);
+            saveCustomDishes(customDishes);
             updateBadges();
+            updateCountBadge();
             renderMenu();
             renderCart();
             renderOrders();
@@ -1920,7 +2297,7 @@
             closeSyncModal();
             // 清掉 URL 上的 #sync= 防止刷新再次弹窗
             history.replaceState(null, '', location.pathname);
-            showToast(`✅ 已导入：${cartCount} 菜 / ${orderCount} 单 / ${favCount} 收藏`);
+            showToast(`✅ 已导入：${cartCount} 菜 / ${orderCount} 单 / ${favCount} 收藏 / ${customCount} 自定义`);
         }
 
         // 页面加载时检测 URL 是否带 #sync= 参数
