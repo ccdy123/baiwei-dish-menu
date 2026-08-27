@@ -1,0 +1,6 @@
+*.zip
+.trae-html-share-packages/
+*.log
+__pycache__/
+.DS_Store
+.git.bak/

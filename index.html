@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#c0392b">
+    <meta name="description" content="精选100道家常美味·图文并茂·一键查询">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="百道菜谱">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="pwa-manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <title>百道家常菜菜单大全</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fef9f3 0%, #f5ebe0 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #d35400 100%);
+            color: white;
+            padding: 50px 20px 40px;
+            padding-top: max(50px, env(safe-area-inset-top));
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: shimmer 8s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(5%, 5%); }
+        }
+
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            letter-spacing: 4px;
+        }
+
+        .hero p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            position: relative;
+            letter-spacing: 2px;
+        }
+
+        .hero .count-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.95em;
+            position: relative;
+        }
+
+        /* 搜索框 */
+        .search-container {
+            max-width: 600px;
+            margin: -25px auto 0;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 6px 25px rgba(192,57,43,0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 38px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #999;
+        }
+
+        /* 分类筛选 */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 30px 20px 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            color: #555;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+        }
+
+        /* 菜品网格 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 20px;
+        }
+
+        .dish-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .dish-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .dish-card:hover .dish-img {
+            transform: scale(1.08);
+        }
+
+        .dish-img-wrapper {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dish-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .dish-type-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .dish-info {
+            padding: 16px;
+        }
+
+        .dish-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 6px;
+        }
+
+        .dish-desc-short {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .view-detail {
+            display: inline-block;
+            margin-top: 10px;
+            color: #c0392b;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 详情弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 560px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .modal-img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 8px;
+        }
+
+        .modal-category {
+            display: inline-block;
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 15px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .modal-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #c0392b;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #c0392b;
+        }
+
+        .modal-desc {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .modal-tips {
+            background: #fef9f3;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 14px;
+            color: #777;
+            line-height: 1.7;
+        }
+
+        /* 无结果提示 */
+        .no-result {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 16px;
+            grid-column: 1 / -1;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            padding-bottom: max(40px, env(safe-area-inset-bottom));
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 1.8em;
+            }
+            .hero p {
+                font-size: 0.95em;
+            }
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 14px;
+                padding: 14px;
+            }
+            .dish-img-wrapper {
+                height: 130px;
+            }
+            .dish-name {
+                font-size: 15px;
+            }
+            .dish-desc-short {
+                font-size: 12px;
+            }
+            .modal-img {
+                height: 220px;
+            }
+            .modal-title {
+                font-size: 22px;
+            }
+            .filter-btn {
+                padding: 6px 14px;
+                font-size: 13px;
+            }
+        }
+
+        /* 滚动条美化 */
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部横幅 -->
+    <div class="hero">
+        <h1>🍳 百道家常菜菜单大全</h1>
+        <p>精选100道家常美味 · 图文并茂 · 一键查询</p>
+        <div class="count-badge">共收录 100 道经典家常菜</div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-box" id="searchInput" placeholder="搜索菜名，如：红烧肉、番茄炒蛋...">
+    </div>
+
+    <!-- 分类筛选 -->
+    <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-type="all">全部菜品</button>
+        <button class="filter-btn" data-type="meat">🥩 肉类硬菜</button>
+        <button class="filter-btn" data-type="fish">🦐 鱼虾海鲜</button>
+        <button class="filter-btn" data-type="egg">🥚 蛋类豆制品</button>
+        <button class="filter-btn" data-type="veg">🥬 时蔬小炒</button>
+        <button class="filter-btn" data-type="soup">🍲 汤羹类</button>
+        <button class="filter-btn" data-type="braise">🍖 焖烧下饭</button>
+        <button class="filter-btn" data-type="cold">🥗 凉拌菜</button>
+        <button class="filter-btn" data-type="staple">🍜 主食小吃</button>
+    </div>
+
+    <!-- 菜品网格 -->
+    <div class="menu-grid" id="menuGrid"></div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <img class="modal-img" id="modalImg" src="" alt="">
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <span class="modal-category" id="modalCategory"></span>
+                <div class="modal-section-title">菜品介绍</div>
+                <p class="modal-desc" id="modalDesc"></p>
+                <div class="modal-section-title">烹饪小贴士</div>
+                <div class="modal-tips" id="modalTips"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <p>🍽️ 百道家常菜菜单大全 · 让每一餐都有滋有味</p>
+    </div>
+
+    <script>
+        // 100道家常菜完整数据
+        const menuData = [
+            // 肉类硬菜
+            {name:"红烧肉",type:"meat",category:"肉类硬菜",img:"images/红烧肉.jpg",desc:"五花肉切块焯水，锅中放少许油，加冰糖炒出糖色，放入五花肉翻炒上色，加葱姜、生抽、老抽、料酒，倒入开水没过肉块，大火烧开后转小火慢炖1小时，最后大火收汁即可。肉质软糯、肥而不腻，是经典的国民下饭菜。",tips:"选三层分明的五花肉最佳；炒糖色时小火慢炒，颜色枣红即可，不要炒糊；炖的时间越久越软糯。"},
+            {name:"糖醋排骨",type:"meat",category:"肉类硬菜",img:"images/糖醋排骨.jpg",desc:"排骨焯水后沥干，锅中油炸至金黄捞出。锅留底油，放入番茄酱、白糖、醋、生抽、水调成糖醋汁，倒入排骨大火翻炒收汁，撒白芝麻即可。酸甜开胃，老少皆宜。",tips:"排骨先焯水去血沫；糖醋比例建议1:1，可根据口味调整；收汁时不停翻炒，避免糊锅。"},
+            {name:"鱼香肉丝",type:"meat",category:"肉类硬菜",img:"images/鱼香肉丝.jpg",desc:"猪里脊切丝腌制，木耳、胡萝卜、冬笋切丝备用。调鱼香汁：生抽、醋、糖、料酒、淀粉、水。锅中炒香泡椒姜末，下肉丝滑散，加配菜翻炒，倒入鱼香汁收汁即可。咸甜酸辣兼备，川菜经典。",tips:"鱼香汁的关键是泡椒和糖醋比例；肉丝提前用淀粉料酒腌制更嫩滑；配菜丝要切均匀。"},
+            {name:"宫保鸡丁",type:"meat",category:"肉类硬菜",img:"images/宫保鸡丁.jpg",desc:"鸡腿肉切丁腌制，花生米炸酥，干辣椒剪段。调碗汁：生抽、醋、糖、料酒、淀粉、水。锅中炒香干辣椒花椒，下鸡丁滑炒变色，加葱段，倒入碗汁翻炒，最后加花生米即可。糊辣鲜香，口感丰富。",tips:"用鸡腿肉比鸡胸肉更嫩；花生米最后放，保持酥脆；干辣椒用小火炒出香味，不要炒糊。"},
+            {name:"回锅肉",type:"meat",category:"肉类硬菜",img:"images/回锅肉.jpg",desc:"五花肉冷水下锅煮至八分熟，捞出切薄片。青蒜苗切段，郫县豆瓣酱剁碎。锅中放少许油，下五花肉片煸炒至微卷出油，加豆瓣酱炒出红油，加甜面酱、生抽，最后放青蒜苗翻炒断生即可。酱香浓郁，川味经典。",tips:"肉煮到筷子能插透即可，不要煮太烂；煸炒肉片时煸出油脂更香；青蒜苗最后放，保持脆嫩。"},
+            {name:"水煮肉片",type:"meat",category:"肉类硬菜",img:"images/水煮肉片.jpg",desc:"猪里脊切薄片，用蛋清、淀粉、盐腌制。豆芽焯水铺碗底。锅中炒香豆瓣酱、火锅底料，加水烧开，下肉片滑熟，连汤倒入碗中。表面撒辣椒面、花椒、蒜末，淋热油激香即可。麻辣鲜嫩，汤汁浓郁。",tips:"肉片要切薄，腌制时加蛋清更嫩滑；煮肉片时水开后一片片下，避免粘连；最后淋热油是灵魂步骤。"},
+            {name:"水煮鱼",type:"meat",category:"肉类硬菜",img:"images/水煮鱼.jpg",desc:"草鱼或黑鱼切片，用盐、料酒、蛋清、淀粉腌制。鱼骨煎香熬汤，加豆瓣酱、火锅底料煮出味，捞出鱼骨，下鱼片滑熟。豆芽垫底，倒入鱼片和汤，表面撒干辣椒、花椒、蒜末，淋热油激香。鱼片滑嫩无腥，下饭一绝。",tips:"鱼片顺着纹理切，不易碎；腌制时间不少于15分钟；油温要够高，淋油时才能激出香味。"},
+            {name:"酸菜鱼",type:"meat",category:"肉类硬菜",img:"images/酸菜鱼.jpg",desc:"黑鱼片腌制，酸菜切段炒香。锅中炒香姜蒜，加酸菜翻炒，倒入骨汤烧开，下鱼片煮至变色，加白胡椒、盐调味。出锅撒葱花、蒜末，淋热油即可。酸辣开胃，鱼肉细嫩。",tips:"酸菜要先炒干水分，香味更浓；鱼片不要煮太久，变色即可；最后加少许白醋提鲜。"},
+            {name:"青椒肉丝",type:"meat",category:"肉类硬菜",img:"images/青椒肉丝.jpg",desc:"瘦肉切丝用生抽、料酒、淀粉腌制，青椒切丝。锅中热油，下肉丝滑炒变色盛出，再炒青椒丝，倒回肉丝，加盐、生抽调味，大火快炒出锅。咸鲜爽口，快手家常菜。",tips:"肉丝提前腌制更嫩滑；全程大火快炒，保持青椒脆嫩；青椒选薄皮的更入味。"},
+            {name:"京酱肉丝",type:"meat",category:"肉类硬菜",img:"images/京酱肉丝.jpg",desc:"猪里脊切丝腌制，锅中炒甜面酱，加少许糖、生抽、水调成酱汁，下肉丝翻炒裹匀酱汁。盘底铺葱丝、黄瓜丝，放上肉丝，配豆腐皮卷食。酱香浓郁，北京经典菜。",tips:"甜面酱是灵魂，不要用普通酱油替代；肉丝要切细；豆腐皮用温水泡软更易卷。"},
+            {name:"蒜香排骨",type:"meat",category:"肉类硬菜",img:"images/蒜香排骨.jpg",desc:"排骨用蒜末、生抽、料酒、盐、淀粉腌制30分钟。锅中热油，排骨下锅炸至金黄酥脆，捞出沥油。锅留底油，下大量蒜末炒香，倒入排骨翻炒，撒椒盐即可。蒜香十足，外酥里嫩。",tips:"蒜末分两次用，腌制和最后炒香；炸排骨时中火慢炸，确保熟透；最后撒椒盐提味。"},
+            {name:"梅菜扣肉",type:"meat",category:"肉类硬菜",img:"images/梅菜扣肉.jpg",desc:"五花肉煮至断生，皮上抹酱油，下锅炸至皮皱起泡，切片。梅干菜泡发洗净，炒香调味。肉片皮朝下码碗中，铺上梅干菜，上锅蒸2小时，倒扣盘中即可。肥油渗透梅菜，咸香软糯。",tips:"炸肉皮时注意防油溅；蒸的时间要够，肉才软糯；梅干菜要多洗几遍去沙。"},
+            {name:"粉蒸肉",type:"meat",category:"肉类硬菜",img:"images/粉蒸肉.jpg",desc:"五花肉切厚片，用生抽、老抽、料酒、糖、豆腐乳腌制。蒸肉米粉加少许水拌匀，裹在肉片上，皮朝下码碗中，上锅大火蒸2小时，倒扣盘中撒葱花。软糯不腻，香气厚重。",tips:"蒸肉米粉可自制：大米加花椒八角炒香磨碎；肉片要切厚片；蒸的时间越长越软糯。"},
+            {name:"可乐鸡翅",type:"meat",category:"肉类硬菜",img:"images/可乐鸡翅.jpg",desc:"鸡翅两面划刀，焯水沥干。锅中少许油煎至两面金黄，加姜片、生抽、老抽，倒入可乐没过鸡翅，大火烧开转中小火焖煮15分钟，大火收汁即可。甜咸适口，老少皆宜。",tips:"鸡翅划刀更入味；可乐用普通可乐，无糖可乐效果差；收汁时注意翻动，避免糊底。"},
+            {name:"奥尔良烤翅",type:"meat",category:"肉类硬菜",img:"images/奥尔良烤翅.jpg",desc:"鸡翅用奥尔良腌料加少许水腌制4小时以上。烤箱预热200度，鸡翅放烤架，烤20分钟，中途翻面刷腌料，最后5分钟可刷蜂蜜。焦香入味，孩子最爱。",tips:"腌制时间越长越入味，最好过夜；烤箱温度根据自家烤箱调整；刷蜂蜜增加光泽和甜味。"},
+            {name:"小鸡炖蘑菇",type:"meat",category:"肉类硬菜",img:"images/小鸡炖蘑菇.jpg",desc:"土鸡剁块焯水，榛蘑泡发洗净。锅中炒香葱姜，下鸡块翻炒，加生抽、老抽，倒入开水，放入榛蘑，大火烧开转小火炖1小时，加盐调味。汤汁浓郁，鸡肉紧实，东北经典硬菜。",tips:"用土鸡味道更鲜；榛蘑是灵魂，没有可用其他蘑菇；炖的时间要够，鸡肉才软烂。"},
+            {name:"黄焖鸡",type:"meat",category:"肉类硬菜",img:"images/黄焖鸡.jpg",desc:"鸡腿肉切块腌制，香菇泡发切块，青椒切块。锅中炒香姜蒜，下鸡块煎至金黄，加香菇、生抽、老抽、蚝油，加水焖煮15分钟，最后放青椒收汁。酱香浓郁，汤汁拌饭绝佳。",tips:"鸡腿肉比鸡胸肉更适合；香菇用干香菇更香；最后加青椒增加清香和色彩。"},
+            {name:"辣子鸡",type:"meat",category:"肉类硬菜",img:"images/辣子鸡.jpg",desc:"鸡肉切丁腌制，下油锅炸至金黄酥脆。锅留底油，下大量干辣椒、花椒炒香，倒入鸡丁，加生抽、糖、盐翻炒，撒熟芝麻和葱花。干香麻辣，越嚼越香。",tips:"鸡肉要炸两次，第一次定型，第二次炸酥；干辣椒量要足；全程大火快炒，保持酥脆。"},
+            {name:"啤酒鸭",type:"meat",category:"肉类硬菜",img:"images/啤酒鸭.jpg",desc:"鸭肉剁块焯水，锅中炒香姜蒜八角桂皮，下鸭肉煸炒出油，加生抽、老抽，倒入啤酒没过鸭肉，大火烧开转小火焖40分钟，加盐收汁。去腥增香，肉质紧实不柴。",tips:"鸭肉先煸炒出油，减少腥味；啤酒用普通黄啤；焖煮时不要盖太紧，让腥味挥发。"},
+            {name:"姜母鸭",type:"meat",category:"肉类硬菜",img:"images/姜母鸭.jpg",desc:"老鸭剁块，老姜切片。砂锅中放麻油，下姜片小火煸至微焦，放鸭块煸炒至皮焦，加米酒、生抽、冰糖、水，大火烧开转小火炖1.5小时。温补鲜香，闽南特色家常菜。",tips:"姜片要煸至微焦，香气才浓；麻油是关键；用老鸭炖汤更鲜。"},
+
+            // 鱼虾海鲜
+            {name:"清蒸鲈鱼",type:"fish",category:"鱼虾海鲜",img:"images/清蒸鲈鱼.jpg",desc:"鲈鱼处理干净，两面划刀，抹盐和料酒，盘底垫葱姜，上锅大火蒸8分钟，倒掉蒸出的水，去掉旧葱姜，铺新葱丝姜丝，淋蒸鱼豉油，浇热油即可。鲜嫩清淡，宴客必备。",tips:"蒸的时间根据鱼大小调整，8两左右8分钟；蒸出的水一定要倒掉，很腥；最后淋热油激发香味。"},
+            {name:"红烧鲫鱼",type:"fish",category:"鱼虾海鲜",img:"images/红烧鲫鱼.jpg",desc:"鲫鱼处理干净，两面划刀，抹盐腌制。锅中油煎至两面金黄，加葱姜、生抽、老抽、料酒、糖，加水没过鱼身，大火烧开转中小火焖10分钟，大火收汁撒葱花。肉质细嫩，汤汁浓郁。",tips:"煎鱼时锅要热，鱼皮才不破；鲫鱼刺多，吃时小心；收汁时用勺子把汁浇在鱼身上。"},
+            {name:"香煎带鱼",type:"fish",category:"鱼虾海鲜",img:"images/香煎带鱼.jpg",desc:"带鱼切段，去内脏黑膜，用盐、料酒、姜片腌制20分钟。擦干水分，裹薄薄一层淀粉，锅中热油，中小火煎至两面金黄酥脆。外酥里嫩，咸香适口。",tips:"带鱼腹内黑膜一定要去掉，很腥；煎之前擦干水分，避免溅油；中小火慢煎，外酥里嫩。"},
+            {name:"油焖大虾",type:"fish",category:"鱼虾海鲜",img:"images/油焖大虾.jpg",desc:"大虾开背去虾线，锅中热油，下大虾煎至两面变红，加姜末、番茄酱、生抽、糖、少许水，盖上锅盖焖3分钟，大火收汁，淋少许醋出锅。红亮入味，鲜甜爽口。",tips:"虾线要去掉；番茄酱是这道菜的灵魂；最后淋少许醋提鲜。"},
+            {name:"白灼虾",type:"fish",category:"鱼虾海鲜",img:"images/白灼虾.jpg",desc:"鲜虾剪去虾须，水中加姜片、葱段、料酒烧开，下大虾煮至变色弯曲，捞出过冰水。调蘸料：生抽、香醋、蒜末、小米辣。最大程度保留海鲜鲜甜。",tips:"水开后再下虾；煮的时间不要太长，变色即可；过冰水虾肉更弹脆。"},
+            {name:"蒜蓉粉丝蒸扇贝",type:"fish",category:"鱼虾海鲜",img:"images/蒜蓉粉丝蒸扇贝.jpg",desc:"扇贝处理干净，粉丝泡软铺在扇贝壳上，放上扇贝肉。蒜蓉用热油激香，加生抽、蚝油调成蒜蓉酱，铺在扇贝上，上锅大火蒸6分钟，撒葱花淋热油。蒜香浓郁，海鲜鲜香。",tips:"粉丝用温水泡软；蒜蓉分两半，一半炸金蒜，一半生蒜混合；蒸的时间不要太长，避免肉老。"},
+            {name:"香辣花甲",type:"fish",category:"鱼虾海鲜",img:"images/香辣花甲.jpg",desc:"花甲用盐水吐沙2小时，焯水至开口捞出。锅中炒香姜蒜干辣椒花椒，下花甲翻炒，加生抽、蚝油、料酒、少许水，大火翻炒收汁，撒葱花。鲜辣开胃，夜宵家常菜。",tips:"花甲一定要吐沙干净；焯水时开口即捞出，未开口的扔掉；全程大火快炒。"},
+            {name:"爆炒鱿鱼",type:"fish",category:"鱼虾海鲜",img:"images/爆炒鱿鱼.jpg",desc:"鱿鱼切花刀，焯水卷曲捞出。锅中炒香姜蒜，下青椒洋葱翻炒，倒入鱿鱼，加生抽、蚝油、料酒，大火快炒出锅。脆弹爽口，海鲜小炒。",tips:"鱿鱼焯水时间要短，卷曲即可；花刀要切均匀，受热后更漂亮；大火快炒保持脆嫩。"},
+            {name:"番茄巴沙鱼",type:"fish",category:"鱼虾海鲜",img:"images/番茄巴沙鱼.jpg",desc:"巴沙鱼切块腌制，番茄切丁炒出汁，加水烧开，下鱼片煮至变色，加盐、糖调味，撒葱花。无刺鲜嫩，酸甜适口，老人小孩都适合。",tips:"巴沙鱼本身无刺，非常适合老人小孩；番茄要炒出沙，汤汁更浓；鱼片不要煮太久。"},
+            {name:"香酥虾",type:"fish",category:"鱼虾海鲜",img:"images/香酥虾.jpg",desc:"大虾开背去虾线，用盐、料酒腌制，裹淀粉，下油锅炸至金黄酥脆，捞出。锅留底油，下蒜末、椒盐，倒入大虾翻炒均匀。干香酥脆，连壳都能吃。",tips:"虾要炸两次，第二次高油温复炸更酥；椒盐可以自己用花椒和盐炒香磨碎；连壳吃补钙。"},
+
+            // 蛋类豆制品
+            {name:"番茄炒蛋",type:"egg",category:"蛋类豆制品",img:"images/番茄炒蛋.jpg",desc:"鸡蛋打散加少许盐，番茄切块。锅中热油，倒入蛋液炒散盛出。锅留底油，下番茄炒出汁，加少许糖，倒回鸡蛋翻炒均匀，加盐调味出锅。酸甜下饭，国民家常菜。",tips:"鸡蛋炒嫩一点更好吃；番茄炒出汁是关键；加少许糖中和酸味。"},
+            {name:"韭菜炒鸡蛋",type:"egg",category:"蛋类豆制品",img:"images/韭菜炒鸡蛋.jpg",desc:"韭菜切段，鸡蛋打散。锅中热油，倒入蛋液炒至凝固，下韭菜大火快炒，加盐调味，韭菜断生立即出锅。鲜香爽口，快手小炒。",tips:"韭菜容易出水，要大火快炒；最后放盐，避免出水；韭菜根部和叶子可以分开下锅。"},
+            {name:"青椒炒蛋",type:"egg",category:"蛋类豆制品",img:"images/青椒炒蛋.jpg",desc:"青椒切块，鸡蛋打散加盐。锅中热油，倒入蛋液炒散盛出，再炒青椒至断生，倒回鸡蛋，加盐、生抽翻炒均匀。咸鲜清淡，做法简单。",tips:"青椒选薄皮的更嫩；鸡蛋不要炒太老；全程大火快炒。"},
+            {name:"虎皮青椒",type:"egg",category:"蛋类豆制品",img:"images/虎皮青椒.jpg",desc:"青椒去籽，锅中少油，下青椒小火煎至表面起虎皮纹，加生抽、醋、糖、少许水，焖煮2分钟收汁。软嫩入味，香辣开胃。",tips:"选表皮较厚的青椒；煎时用锅铲按压，使受热均匀；糖醋比例是灵魂。"},
+            {name:"麻婆豆腐",type:"egg",category:"蛋类豆制品",img:"images/麻婆豆腐.jpg",desc:"嫩豆腐切块焯水，牛肉末炒香，加豆瓣酱、花椒粉炒出红油，加水烧开，下豆腐轻推，煮3分钟，勾芡收汁，撒花椒粉和葱花。麻辣鲜香，拌饭神器。",tips:"豆腐焯水去豆腥；推豆腐时用锅铲背面，避免碎；花椒粉最后撒，麻味更足。"},
+            {name:"家常豆腐",type:"egg",category:"蛋类豆制品",img:"images/家常豆腐.jpg",desc:"老豆腐切块，煎至两面金黄。锅中炒香木耳、青椒，加生抽、老抽、糖、水，倒入豆腐焖煮3分钟，勾芡收汁。酱香浓郁，豆腐外焦里嫩。",tips:"用老豆腐不易碎；煎豆腐时不要急着翻，定型后再翻；焖煮让豆腐入味。"},
+            {name:"香干炒肉",type:"egg",category:"蛋类豆制品",img:"images/香干炒肉.jpg",desc:"香干切丝，瘦肉切丝腌制。锅中炒香肉丝盛出，再炒香干丝，加青椒丝，倒回肉丝，加盐、生抽调味。咸香有嚼劲，下饭快手菜。",tips:"香干可以先焯水去豆腥；肉丝提前腌制更嫩；青椒最后放保持脆嫩。"},
+            {name:"腐竹烧肉",type:"egg",category:"蛋类豆制品",img:"images/腐竹烧肉.jpg",desc:"腐竹用冷水泡发切段，五花肉切块煸炒出油，加生抽、老抽、冰糖，加水烧开，下腐竹焖煮20分钟，大火收汁。腐竹吸满肉香，软嫩入味。",tips:"腐竹用冷水泡发，不易碎；泡发时间约2小时；腐竹容易吸汤，水要多放一些。"},
+            {name:"皮蛋拌豆腐",type:"egg",category:"蛋类豆制品",img:"images/皮蛋拌豆腐.jpg",desc:"嫩豆腐切块摆盘，皮蛋切丁放在豆腐上，淋生抽、香醋、香油，撒葱花和榨菜末。清爽解腻，简单凉菜。",tips:"豆腐用内酯豆腐最嫩；皮蛋切时刀沾水，不粘刀；冷藏后口感更佳。"},
+            {name:"盐水煮蛋",type:"egg",category:"蛋类豆制品",img:"images/盐水煮蛋.jpg",desc:"鸡蛋冷水下锅，加少许盐，水开后煮8分钟，捞出过凉水剥壳。可以直接吃，也可以用盐水浸泡过夜更入味。口感咸香，简单早餐小菜。",tips:"冷水下锅，鸡蛋不易裂；煮好后过凉水，好剥壳；想要咸蛋效果，可用盐水浸泡过夜。"},
+
+            // 时蔬小炒
+            {name:"清炒西兰花",type:"veg",category:"时蔬小炒",img:"images/清炒西兰花.jpg",desc:"西兰花切小朵，盐水浸泡10分钟，焯水1分钟捞出。锅中热油，下蒜末炒香，倒入西兰花大火快炒，加盐调味出锅。清淡健康，低脂家常菜。",tips:"西兰花用盐水浸泡去虫；焯水时间不要太长，保持翠绿；大火快炒保留营养。"},
+            {name:"蒜蓉油麦菜",type:"veg",category:"时蔬小炒",img:"images/蒜蓉油麦菜.jpg",desc:"油麦菜洗净切段，锅中热油，下大量蒜末炒香，倒入油麦菜大火快炒，加盐、生抽调味，断生立即出锅。蒜香清爽，解腻素菜。",tips:"蒜末要多，是这道菜的灵魂；油麦菜容易出水，大火快炒；出锅前可以淋少许香油。"},
+            {name:"干煸豆角",type:"veg",category:"时蔬小炒",img:"images/干煸豆角.jpg",desc:"豆角掰段，锅中多油，下豆角煸至表皮微皱起虎皮，盛出。锅留底油，下肉末炒散，加干辣椒、花椒、豆瓣酱，倒回豆角翻炒，加盐、生抽调味。干香麻辣，下饭神器。",tips:"豆角一定要煸熟透，生豆角有毒；煸时中火，避免外焦内生；肉末增加香味。"},
+            {name:"地三鲜",type:"veg",category:"时蔬小炒",img:"images/地三鲜.jpg",desc:"土豆、茄子切滚刀块，青椒切块。土豆和茄子分别过油炸至金黄。锅中炒香蒜末，加生抽、老抽、糖、水，倒入所有食材翻炒，勾芡收汁。酱香浓郁，东北经典素菜。",tips:"茄子炸后会变软，不要炸太久；土豆要炸熟；最后勾芡让酱汁裹满食材。"},
+            {name:"酸辣土豆丝",type:"veg",category:"时蔬小炒",img:"images/酸辣土豆丝.jpg",desc:"土豆切丝，泡水去淀粉，沥干。锅中热油，下干辣椒花椒炒香，倒入土豆丝大火快炒，加醋、盐、生抽，炒至断生出锅。酸辣脆爽，经典下饭小菜。",tips:"土豆丝泡水去淀粉，炒出来才脆；醋要早放，保持脆度；全程大火快炒。"},
+            {name:"清炒山药",type:"veg",category:"时蔬小炒",img:"images/清炒山药.jpg",desc:"山药去皮切片，泡水防氧化。锅中热油，下山药片快炒，加少许水焖1分钟，加盐、枸杞，翻炒出锅。清淡养胃，口感脆嫩。",tips:"山药去皮时戴手套，防过敏；切片后泡水防变色；炒的时间不要太长，保持脆嫩。"},
+            {name:"荷塘月色",type:"veg",category:"时蔬小炒",img:"images/荷塘月色.jpg",desc:"莲藕切片泡水，荷兰豆去筋，木耳泡发，百合剥瓣。分别焯水后，锅中热油，下所有食材大火快炒，加盐、少许糖调味。色彩清爽，口感丰富，清淡健康。",tips:"食材焯水时间要短，保持脆嫩；莲藕泡水防变色；百合最后放，避免炒碎。"},
+            {name:"芹菜炒香干",type:"veg",category:"时蔬小炒",img:"images/芹菜炒香干.jpg",desc:"芹菜切段，香干切丝。锅中热油，下香干丝炒香，加芹菜段大火快炒，加盐、生抽调味，芹菜断生出锅。咸香爽口，低脂健康。",tips:"芹菜选西芹或本地芹菜均可；香干先炒出香味；芹菜不要炒太久，保持脆嫩。"},
+            {name:"菠菜炒蛋",type:"veg",category:"时蔬小炒",img:"images/菠菜炒蛋.jpg",desc:"菠菜切段焯水去草酸，鸡蛋打散。锅中热油，倒入蛋液炒散盛出，再炒菠菜，倒回鸡蛋，加盐调味。清淡鲜香，营养均衡。",tips:"菠菜焯水去草酸，更健康；焯水时间30秒即可；鸡蛋炒嫩一些。"},
+            {name:"空心菜梗炒肉",type:"veg",category:"时蔬小炒",img:"images/空心菜梗炒肉.jpg",desc:"空心菜梗切段拍裂，瘦肉切丝腌制。锅中炒香肉丝盛出，再炒空心菜梗，加豆豉、辣椒，倒回肉丝，加盐调味。脆嫩爽口，南方家常小炒。",tips:"空心菜梗拍裂更入味；豆豉是灵魂；大火快炒保持脆嫩。"},
+
+            // 汤羹类
+            {name:"番茄鸡蛋汤",type:"soup",category:"汤羹类",img:"images/番茄鸡蛋汤.jpg",desc:"番茄切块炒出汁，加水烧开，加盐、糖调味，淋入蛋液形成蛋花，撒葱花。酸甜清淡，快手汤品。",tips:"番茄炒出沙，汤更浓；蛋液沿锅边淋入，蛋花更漂亮；加少许糖提鲜。"},
+            {name:"冬瓜排骨汤",type:"soup",category:"汤羹类",img:"images/冬瓜排骨汤.jpg",desc:"排骨焯水，放入砂锅，加姜片、料酒，加水大火烧开转小火炖40分钟，加冬瓜块再炖15分钟，加盐调味。汤色清亮，清热解腻。",tips:"排骨冷水下锅焯水；冬瓜后放，避免煮烂；小火慢炖汤更鲜。"},
+            {name:"玉米排骨汤",type:"soup",category:"汤羹类",img:"images/玉米排骨汤.jpg",desc:"排骨焯水，甜玉米切段，一起放入砂锅，加姜片、水，大火烧开转小火炖1小时，加盐调味。清甜鲜香，老少皆宜。",tips:"用甜玉米，汤有自然甜味；炖的时间越久越浓；可以加胡萝卜增加营养。"},
+            {name:"菌菇鸡汤",type:"soup",category:"汤羹类",img:"images/菌菇鸡汤.jpg",desc:"土鸡焯水，放入砂锅，加姜片、多种菌菇（香菇、茶树菇、杏鲍菇等），加水大火烧开转小火炖1.5小时，加盐调味。鲜味浓郁，滋补养生。",tips:"菌菇种类越多越鲜；干菌菇提前泡发；用土鸡味道更醇厚。"},
+            {name:"紫菜蛋花汤",type:"soup",category:"汤羹类",img:"images/紫菜蛋花汤.jpg",desc:"水烧开，放入紫菜煮1分钟，加盐、虾皮调味，淋入蛋液形成蛋花，撒葱花，淋香油。极简快手汤，鲜香味美。",tips:"紫菜煮的时间不要太长；虾皮增加鲜味；蛋液要慢慢淋入。"},
+            {name:"丝瓜鸡蛋汤",type:"soup",category:"汤羹类",img:"images/丝瓜鸡蛋汤.jpg",desc:"丝瓜去皮切片，锅中少许油炒丝瓜，加水烧开，加盐调味，淋入蛋液，撒葱花。清淡利水，夏季家常汤。",tips:"丝瓜不要炒太久，保持翠绿；鸡蛋液最后淋；加少许白胡椒提味。"},
+            {name:"萝卜牛腩汤",type:"soup",category:"汤羹类",img:"images/萝卜牛腩汤.jpg",desc:"牛腩切块焯水，放入砂锅，加姜片、料酒，加水大火烧开转小火炖1小时，加白萝卜块再炖30分钟，加盐、白胡椒调味。软烂入味，汤汁醇厚。",tips:"牛腩炖的时间要够，才软烂；白萝卜后放，避免煮烂；白胡椒是灵魂。"},
+            {name:"豆腐鲫鱼汤",type:"soup",category:"汤羹类",img:"images/豆腐鲫鱼汤.jpg",desc:"鲫鱼处理干净，锅中煎至两面金黄，加姜片、开水，大火煮10分钟至汤奶白，加豆腐块再煮5分钟，加盐、白胡椒调味，撒葱花。汤色奶白，鲜香味浓。",tips:"鱼要煎透，汤才奶白；一定要加开水；大火煮是汤色奶白的关键。"},
+            {name:"银耳莲子汤",type:"soup",category:"汤羹类",img:"images/银耳莲子汤.jpg",desc:"银耳撕小朵泡发，莲子去芯，一起放入锅中，加水大火烧开转小火炖1小时至出胶，加枸杞、冰糖再炖10分钟。清甜润燥，甜汤佳品。",tips:"银耳要撕小朵，更容易出胶；炖的时间要够；莲子去芯不苦。"},
+            {name:"绿豆汤",type:"soup",category:"汤羹类",img:"images/绿豆汤.jpg",desc:"绿豆洗净，加水浸泡1小时，大火烧开转小火煮30分钟至绿豆开花，加冰糖调味。清热解暑，夏季必备甜汤。",tips:"绿豆提前浸泡，更容易煮烂；想要清汤就少煮，想要沙感就多煮；冷藏后更好喝。"},
+
+            // 焖烧下饭
+            {name:"土豆炖牛腩",type:"braise",category:"焖烧下饭",img:"images/土豆炖牛腩.jpg",desc:"牛腩切块焯水，锅中炒香姜蒜，下牛腩煸炒，加生抽、老抽、料酒，加水烧开转小火炖1小时，加土豆块再炖20分钟，加盐收汁。肉质软烂，土豆吸满肉香。",tips:"牛腩要炖够时间才软烂；土豆后放，避免煮烂；可以加少许番茄酱提味。"},
+            {name:"排骨炖豆角",type:"braise",category:"焖烧下饭",img:"images/排骨炖豆角.jpg",desc:"排骨焯水，锅中炒香葱姜，下排骨煸炒，加生抽、老抽，加水烧开，下东北油豆角，小火炖30分钟，加盐收汁。酱香浓郁，东北农家菜。",tips:"用东北油豆角，炖后更绵；排骨先炖一会儿再下豆角；豆角一定要炖熟。"},
+            {name:"小鸡炖土豆",type:"braise",category:"焖烧下饭",img:"images/小鸡炖土豆.jpg",desc:"鸡块焯水，锅中炒香姜蒜，下鸡块煸炒，加生抽、老抽，加水烧开，下土豆块，小火炖25分钟，加盐收汁。土豆绵密，鸡肉入味。",tips:"土豆选黄心的，炖后更绵；鸡块可以先用油煎一下；炖的时间根据鸡肉老嫩调整。"},
+            {name:"萝卜烧排骨",type:"braise",category:"焖烧下饭",img:"images/萝卜烧排骨.jpg",desc:"排骨焯水，锅中炒香姜蒜，下排骨煸炒，加生抽、老抽、冰糖，加水烧开转小火炖30分钟，加白萝卜块再炖15分钟，收汁。咸鲜清甜，秋冬家常菜。",tips:"白萝卜选白皮的，炖后更甜；排骨先炖至半熟再加萝卜；冰糖炒糖色更好看。"},
+            {name:"香菇滑鸡",type:"braise",category:"焖烧下饭",img:"images/香菇滑鸡.jpg",desc:"鸡腿肉切块腌制，干香菇泡发切片，铺在盘底，放上鸡肉，上锅大火蒸15分钟，撒葱花。滑嫩鲜香，粤式家常菜。",tips:"用鸡腿肉更嫩滑；干香菇比鲜香菇香；蒸的时间不要太长，保持嫩滑。"},
+            {name:"蚝油生菜",type:"braise",category:"焖烧下饭",img:"images/蚝油生菜.jpg",desc:"生菜洗净，锅中水烧开，加少许油和盐，下生菜焯水30秒捞出摆盘。锅中调蚝油汁：蚝油、生抽、糖、水、淀粉，煮开淋在生菜上。清淡爽口，低脂小菜。",tips:"焯水时加油和盐，生菜更翠绿；焯水时间要短；蚝油汁煮开后淋上。"},
+            {name:"干锅花菜",type:"braise",category:"焖烧下饭",img:"images/干锅花菜.jpg",desc:"花菜掰小朵，焯水沥干。锅中炒香五花肉片出油，加干辣椒、花椒、豆瓣酱，下花菜大火翻炒，加生抽、糖调味，干香微辣。",tips:"花菜焯水后沥干水分，干锅才香；五花肉煸出油是灵魂；全程大火，炒出干香。"},
+            {name:"干锅排骨",type:"braise",category:"焖烧下饭",img:"images/干锅排骨.jpg",desc:"排骨腌制后炸至金黄，锅中炒香干辣椒、花椒、姜蒜，下排骨翻炒，加生抽、糖、孜然，撒芝麻葱花。干香麻辣，越吃越香。",tips:"排骨要先腌后炸，更入味；炸至金黄酥脆；干锅可以放在酒精炉上保温食用。"},
+            {name:"香辣蟹",type:"braise",category:"焖烧下饭",img:"images/香辣蟹.jpg",desc:"螃蟹斩块，裹淀粉炸至金黄。锅中炒香姜蒜干辣椒花椒，加豆瓣酱，下螃蟹翻炒，加生抽、糖、料酒，加水焖3分钟收汁。鲜辣入味，海鲜硬菜。",tips:"螃蟹要选鲜活的；炸之前裹淀粉，锁住水分；焖煮时间不要太长，保持鲜嫩。"},
+            {name:"酱牛肉",type:"braise",category:"焖烧下饭",img:"images/酱牛肉.jpg",desc:"牛腱子肉焯水，放入卤锅，加生抽、老抽、冰糖、八角、桂皮、香叶、花椒、干辣椒，加水没过，大火烧开转小火卤2小时，浸泡过夜更入味，切片蘸料食用。酱香紧实，可做凉菜。",tips:"用牛腱子肉，有筋口感好；卤好后浸泡过夜更入味；冷藏后更好切。"},
+
+            // 凉拌菜
+            {name:"凉拌黄瓜",type:"cold",category:"凉拌菜",img:"images/凉拌黄瓜.jpg",desc:"黄瓜拍碎切段，加蒜末、小米辣、生抽、香醋、糖、盐、香油，拌匀腌制10分钟。清爽解腻，开胃凉菜。",tips:"黄瓜拍碎比切的更入味；腌制10分钟更入味；冷藏后口感更佳。"},
+            {name:"凉拌木耳",type:"cold",category:"凉拌菜",img:"images/凉拌木耳.jpg",desc:"木耳泡发焯水，过凉水沥干，加蒜末、小米辣、香菜、生抽、香醋、糖、香油，拌匀。脆嫩爽口，开胃凉菜。",tips:"木耳用冷水泡发，口感更脆；焯水时间1分钟即可；加少许白芝麻更香。"},
+            {name:"凉拌海带丝",type:"cold",category:"凉拌菜",img:"images/凉拌海带丝.jpg",desc:"海带丝焯水去腥味，过凉水沥干，加蒜末、辣椒面、生抽、香醋、糖、香油，淋热油激香，拌匀。酸辣开胃，低脂凉菜。",tips:"海带丝焯水去腥味；淋热油激香蒜末辣椒；冷藏后更爽口。"},
+            {name:"凉拌三丝",type:"cold",category:"凉拌菜",img:"images/凉拌三丝.jpg",desc:"胡萝卜丝、黄瓜丝、粉丝（焯水），加蒜末、生抽、香醋、糖、香油、辣椒油，拌匀。色彩丰富，口感清爽。",tips:"粉丝用温水泡软，焯水后过凉水；三丝切均匀；可以根据喜好加豆芽、莴笋丝。"},
+            {name:"口水鸡",type:"cold",category:"凉拌菜",img:"images/口水鸡.jpg",desc:"三黄鸡煮熟，冰水浸泡，切块摆盘。调红油汁：辣椒油、花椒油、生抽、香醋、糖、蒜末、花生碎、葱花，淋在鸡块上。麻辣鲜香，川味凉菜。",tips:"鸡肉煮好后过冰水，皮脆肉嫩；红油是灵魂；花生碎增加口感。"},
+            {name:"凉拌鸡丝",type:"cold",category:"凉拌菜",img:"images/凉拌鸡丝.jpg",desc:"鸡胸肉煮熟撕丝，黄瓜切丝，加生抽、香醋、糖、蒜末、香油、辣椒油，拌匀。低脂爽口，夏日凉菜。",tips:"鸡胸肉煮的时候加姜片料酒去腥；撕丝比切丝更入味；可以加粉丝增加饱腹感。"},
+            {name:"蒜泥白肉",type:"cold",category:"凉拌菜",img:"images/蒜泥白肉.jpg",desc:"五花肉煮熟，切薄片摆盘。调蒜泥汁：蒜泥、生抽、香醋、糖、辣椒油、香油，淋在肉片上。肥而不腻，川菜经典凉菜。",tips:"五花肉煮至筷子能插透即可；片要切薄；蒜泥要多，是灵魂。"},
+            {name:"凉拌皮蛋",type:"cold",category:"凉拌菜",img:"images/凉拌皮蛋.jpg",desc:"皮蛋切块摆盘，加姜末、生抽、香醋、糖、香油、辣椒油，撒葱花。简单开胃，下酒凉菜。",tips:"皮蛋切时刀沾水，不粘刀；加姜末去腥；可以配豆腐一起拌。"},
+            {name:"凉拌秋葵",type:"cold",category:"凉拌菜",img:"images/凉拌秋葵.jpg",desc:"秋葵焯水2分钟，过凉水，切去蒂，对半切开摆盘，淋生抽、蚝油、蒜末、香油。滑嫩低脂，健康凉菜。",tips:"秋葵焯水时加少许盐和油，更翠绿；不要切太小，保留黏液；冷藏后更爽口。"},
+            {name:"凉拌藕片",type:"cold",category:"凉拌菜",img:"images/凉拌藕片.jpg",desc:"莲藕切片，泡水去淀粉，焯水1分钟过凉水，加小米辣、蒜末、生抽、香醋、糖、香油，拌匀。脆爽开胃，经典凉菜。",tips:"藕片泡水去淀粉，更脆；焯水时间不要太长；加少许白醋防变色。"},
+
+            // 主食小吃
+            {name:"葱油饼",type:"staple",category:"主食小吃",img:"images/葱油饼.jpg",desc:"面粉加温水揉成面团，醒发30分钟。擀成薄片，抹油酥（油+面粉+盐+葱花），卷起盘圆，再擀成饼，平底锅小火煎至两面金黄。外酥里软，葱香浓郁。",tips:"面团要醒够时间，才好擀；油酥是分层的关键；小火慢煎，外酥里软。"},
+            {name:"蛋炒饭",type:"staple",category:"主食小吃",img:"images/蛋炒饭.jpg",desc:"隔夜米饭打散，鸡蛋打散。锅中热油，倒入蛋液炒散，下米饭大火翻炒，加生抽、盐，炒至颗粒分明，撒葱花。咸香饱腹，经典主食。",tips:"用隔夜饭，水分少更粒粒分明；鸡蛋可以先炒散再拌饭；全程大火翻炒。"},
+            {name:"扬州炒饭",type:"staple",category:"主食小吃",img:"images/扬州炒饭.jpg",desc:"隔夜米饭，火腿丁、虾仁、青豆、玉米粒、鸡蛋。锅中炒散鸡蛋，下所有配料翻炒，加米饭，加盐、生抽、白胡椒，炒至颗粒分明。料足鲜香，经典炒饭。",tips:"配料可以根据喜好调整；虾仁提前焯水；米饭要炒散，不要结块。"},
+            {name:"酱油炒饭",type:"staple",category:"主食小吃",img:"images/酱油炒饭.jpg",desc:"隔夜米饭打散，锅中热油，下米饭翻炒，加生抽、老抽、糖，炒至每粒米都裹上酱汁，撒葱花。酱香浓郁，简单快手主食。",tips:"生抽提鲜，老抽上色；酱油要分次加，避免结块；可以加鸡蛋更丰富。"},
+            {name:"番茄牛腩面",type:"staple",category:"主食小吃",img:"images/番茄牛腩面.jpg",desc:"牛腩炖烂，番茄炒出汁，加牛腩和汤，加盐、糖调味。面条煮熟捞出，浇上番茄牛腩汤，撒葱花。酸甜浓郁，暖胃主食。",tips:"牛腩提前炖好，更软烂；番茄要炒出沙；面条可以用手擀面更劲道。"},
+            {name:"炸酱面",type:"staple",category:"主食小吃",img:"images/炸酱面.jpg",desc:"五花肉丁炒出油，加甜面酱、黄豆酱、生抽、糖，小火熬成炸酱。面条煮熟，浇炸酱，配黄瓜丝、豆芽、葱丝，拌匀。酱香浓郁，北方经典面食。",tips:"炸酱要用甜面酱+黄豆酱混合；小火慢熬，不停搅拌防糊；配菜丝是灵魂。"},
+            {name:"酸辣粉",type:"staple",category:"主食小吃",img:"images/酸辣粉.jpg",desc:"红薯粉泡软煮熟，调汤底：辣椒油、花椒油、生抽、香醋、糖、蒜末、花生碎、香菜、榨菜末，冲入热汤，放入粉条。酸辣开胃，经典小吃。",tips:"红薯粉要提前泡软；汤底酸辣比例根据口味调整；花生碎和榨菜增加口感。"},
+            {name:"韭菜盒子",type:"staple",category:"主食小吃",img:"images/韭菜盒子.jpg",desc:"面粉加温水揉面团醒发。韭菜切碎，加炒散的鸡蛋、虾皮、盐、香油调成馅。面团分剂子擀皮，包入馅料，捏成花边，平底锅小火煎至两面金黄。外皮酥脆，鲜香可口。",tips:"韭菜馅最后放盐，避免出水；花边捏紧，防止漏馅；小火慢煎，皮才熟透。"},
+            {name:"南瓜饼",type:"staple",category:"主食小吃",img:"images/南瓜饼.jpg",desc:"南瓜蒸熟压泥，加糯米粉、糖揉成面团，分小剂子压扁，裹面包糠，平底锅小火煎至两面金黄。香甜软糯，家常小吃。",tips:"南瓜泥要沥干水分；糯米粉分次加，调整软硬；可以包豆沙馅更丰富。"},
+            {name:"红糖糍粑",type:"staple",category:"主食小吃",img:"images/红糖糍粑.jpg",desc:"糯米粉加温水揉成团，搓条切段，蒸熟或煎熟。调红糖汁：红糖加少许水煮开，淋在糍粑上，撒黄豆粉。甜糯小吃，经典甜品。",tips:"糯米团要揉至光滑；煎糍粑时小火，外酥里糯；红糖汁要熬至浓稠。"},
+
+            // 特色风味
+            {name:"剁椒鱼头",type:"meat",category:"特色风味",img:"images/剁椒鱼头.jpg",desc:"胖头鱼头处理干净，从中间剖开，抹盐和料酒，铺满剁椒，上锅大火蒸12分钟，倒掉蒸水，撒葱花，淋热油和蒸鱼豉油。鲜辣入味，湘式硬菜。",tips:"鱼头要选大的，肉多；剁椒本身有盐，注意咸度；蒸的时间根据鱼头大小调整。"},
+            {name:"毛血旺",type:"meat",category:"特色风味",img:"images/毛血旺.jpg",desc:"鸭血、毛肚、黄喉、午餐肉、豆芽等食材。锅中炒香豆瓣酱、火锅底料，加水烧开，依次下食材煮熟，连汤倒入碗中，撒干辣椒、花椒、蒜末，淋热油。麻辣鲜香，川味经典。",tips:"食材可以根据喜好搭配；毛肚最后下，烫几秒即可；最后淋热油是灵魂。"},
+            {name:"夫妻肺片",type:"cold",category:"特色风味",img:"images/夫妻肺片.jpg",desc:"牛肉、牛肚、牛舌等卤熟切片，调红油汁：辣椒油、花椒油、生抽、香醋、糖、花生碎、芝麻、葱花，淋在肉片上。麻辣鲜香，经典凉菜。",tips:"牛下水要处理干净，卤至软烂；红油是灵魂；花生碎增加香脆口感。"},
+            {name:"干煸肥肠",type:"meat",category:"特色风味",img:"images/干煸肥肠.jpg",desc:"肥肠处理干净，煮熟切段，锅中煸至出油微焦，加干辣椒、花椒、姜蒜、豆瓣酱，大火翻炒，加生抽、糖调味。干香有嚼劲，重口味最爱。",tips:"肥肠一定要处理干净，用面粉和醋反复搓洗；煸至出油才香；可以配青椒洋葱。"},
+            {name:"爆炒腰花",type:"meat",category:"特色风味",img:"images/爆炒腰花.jpg",desc:"猪腰去臊腺，切花刀，用料酒、醋腌制去腥，焯水卷曲。锅中炒香姜蒜，下青椒、木耳，倒回腰花，加生抽、料酒、盐，大火快炒出锅。脆嫩爽口，下饭硬菜。",tips:"腰花去臊腺是关键，否则很腥；切花刀受热后更漂亮；大火快炒，避免老。"},
+            {name:"鱼香茄子",type:"veg",category:"特色风味",img:"images/鱼香茄子.jpg",desc:"茄子切条，撒盐腌出水，挤干。调鱼香汁：生抽、醋、糖、料酒、淀粉、水。锅中炒香泡椒姜末，下茄子炒软，倒入鱼香汁收汁。咸甜酸辣，川菜素菜。",tips:"茄子腌出水后再炒，省油；鱼香汁比例要调好；可以加肉末更香。"},
+            {name:"红烧茄子",type:"veg",category:"特色风味",img:"images/红烧茄子.jpg",desc:"茄子切滚刀块，撒盐腌出水，挤干，裹淀粉炸至金黄。锅中炒香蒜末，加生抽、老抽、糖、水，倒入茄子焖煮2分钟，勾芡收汁撒葱花。酱香浓郁，软嫩入味。",tips:"茄子腌出水后再炸，省油；炸至金黄外焦里嫩；最后勾芡让酱汁裹满。"},
+            {name:"蒜蓉西兰花",type:"veg",category:"特色风味",img:"images/蒜蓉西兰花.jpg",desc:"西兰花切小朵，盐水浸泡，焯水1分钟。锅中热油，下大量蒜末炒香，倒入西兰花大火快炒，加盐、少许蚝油调味。清淡健康，低脂家常。",tips:"西兰花焯水时加少许油盐，更翠绿；蒜末要多；大火快炒保留营养。"},
+            {name:"爆炒花甲",type:"fish",category:"特色风味",img:"images/爆炒花甲.jpg",desc:"花甲盐水吐沙，焯水至开口捞出。锅中炒香姜蒜、干辣椒、紫苏，下花甲大火翻炒，加生抽、蚝油、料酒，收汁撒葱花。鲜辣入味，海鲜小炒。",tips:"花甲吐沙要干净；焯水时开口即捞出；紫苏是灵魂，增加特殊香气。"},
+            {name:"椒盐虾",type:"fish",category:"特色风味",img:"images/椒盐虾.jpg",desc:"大虾开背去虾线，裹淀粉，下油锅炸至金黄酥脆。锅留底油，下蒜末、辣椒圈、椒盐，倒入大虾翻炒均匀。干香咸鲜，连壳都能吃。",tips:"虾要炸两次，第二次复炸更酥；椒盐可以自制：花椒+盐炒香磨碎；蒜末炒至金黄更香。"}
+        ];
+
+        const menuGrid = document.getElementById('menuGrid');
+        const searchInput = document.getElementById('searchInput');
+        const filterBar = document.getElementById('filterBar');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const modalImg = document.getElementById('modalImg');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCategory = document.getElementById('modalCategory');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalTips = document.getElementById('modalTips');
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        // 渲染菜品列表
+        function renderMenu() {
+            let filtered = menuData;
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(item => item.type === currentFilter);
+            }
+
+            if (currentSearch) {
+                filtered = filtered.filter(item =>
+                    item.name.includes(currentSearch) ||
+                    item.desc.includes(currentSearch) ||
+                    item.category.includes(currentSearch)
+                );
+            }
+
+            if (filtered.length === 0) {
+                menuGrid.innerHTML = '<div class="no-result">😢 没有找到相关菜品，换个关键词试试吧</div>';
+                return;
+            }
+
+            menuGrid.innerHTML = filtered.map(item => `
+                <div class="dish-card" data-name="${item.name}">
+                    <div class="dish-img-wrapper">
+                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy">
+                        <span class="dish-type-tag">${item.category}</span>
+                    </div>
+                    <div class="dish-info">
+                        <div class="dish-name">${item.name}</div>
+                        <div class="dish-desc-short">${item.desc.substring(0, 40)}...</div>
+                        <span class="view-detail">查看详情 →</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // 绑定卡片点击事件
+            document.querySelectorAll('.dish-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const name = card.dataset.name;
+                    const dish = menuData.find(item => item.name === name);
+                    if (dish) openModal(dish);
+                });
+            });
+        }
+
+        // 打开详情弹窗
+        function openModal(dish) {
+            modalImg.src = dish.img;
+            modalImg.alt = dish.name;
+            modalTitle.textContent = dish.name;
+            modalCategory.textContent = dish.category;
+            modalDesc.textContent = dish.desc;
+            modalTips.textContent = dish.tips;
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // 分类筛选
+        filterBar.addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.type;
+                renderMenu();
+            }
+        });
+
+        // 搜索
+        searchInput.addEventListener('input', (e) => {
+            currentSearch = e.target.value.trim();
+            renderMenu();
+        });
+
+        // 初始渲染
+        renderMenu();
+
+        // Service Worker 注册（PWA 离线支持）
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((reg) => console.log('SW registered:', reg.scope))
+                    .catch((err) => console.warn('SW register failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
