@@ -1035,13 +1035,16 @@
         let currentSearch = '';
 
         // 通用菜品卡片 HTML 模板
+        const IMG_FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#faf6f0"/><text x="200" y="155" text-anchor="middle" font-size="48" fill="#c0392b">🍴</text><text x="200" y="195" text-anchor="middle" font-size="14" fill="#999" font-family="sans-serif">图片加载失败</text></svg>'
+        );
         function dishCardHtml(item) {
             const fav = isFavorite(item.name);
             const inCart = getCartQty(item.name);
             return `
                 <div class="dish-card" data-name="${item.name}">
                     <div class="dish-img-wrapper">
-                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy">
+                        <img class="dish-img" src="${item.img}" alt="${item.name}" loading="lazy" onerror="this.onerror=null;this.src='${IMG_FALLBACK}';">
                         <span class="dish-type-tag">${item.category}</span>
                         <button class="fav-btn ${fav ? 'active' : ''}" data-action="fav" data-name="${item.name}" title="${fav ? '取消收藏' : '收藏'}">${fav ? '❤' : '♡'}</button>
                     </div>
