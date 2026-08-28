@@ -2258,6 +2258,7 @@
             if (!confirm(`确认删除自创菜品「${name}」？\n\n⚠ 删除后无法恢复，同时其他设备也会移除。`)) return;
             customDishes = customDishes.filter(d => d.name !== name);
             saveCustomDishes(customDishes);
+            recordTombstone('dishes', name); // 记录墓碑，防止同步时复活
             // 若在收藏夹则同步移除
             if (favorites.includes(name)) {
                 favorites = favorites.filter(n => n !== name);
@@ -2408,7 +2409,7 @@
         });
 
         // ========== 状态管理（localStorage 持久化）==========
-        const STORAGE_KEYS = { cart: 'baiwei_cart', orders: 'baiwei_orders', favorites: 'baiwei_favorites', custom: 'baiwei_custom_dishes' };
+        const STORAGE_KEYS = { cart: 'baiwei_cart', orders: 'baiwei_orders', favorites: 'baiwei_favorites', custom: 'baiwei_custom_dishes', tombstones: 'baiwei_tombstones' };
         // 加载自定义菜品（在 STORAGE_KEYS 定义后立即加载，保证 getFullMenu 有数据）
         customDishes = loadState(STORAGE_KEYS.custom, []);
         // 保存自定义菜品（触发 jsonbin 推送）
@@ -2427,6 +2428,26 @@
             catch (e) { console.warn('localStorage 保存失败', e); }
             schedulePush(); // 任何本地写入都触发 jsonbin 推送
         }
+
+        // ========== 墓碑机制：记录已删除项，防止同步时被重新合并回来 ==========
+        // 结构: { orders: {orderId: timestamp}, dishes: {dishName: timestamp}, carts: {dishName: timestamp} }
+        let tombstones = loadState(STORAGE_KEYS.tombstones, { orders: {}, dishes: {}, carts: {} });
+        function recordTombstone(type, key) {
+            if (!tombstones[type]) tombstones[type] = {};
+            tombstones[type][key] = Date.now();
+            // 限制墓碑数量，超过 200 条时清理最旧的
+            const entries = Object.entries(tombstones[type]);
+            if (entries.length > 200) {
+                entries.sort((a, b) => a[1] - b[1]);
+                tombstones[type] = Object.fromEntries(entries.slice(-150));
+            }
+            try { localStorage.setItem(STORAGE_KEYS.tombstones, JSON.stringify(tombstones)); } catch(e) {}
+            schedulePush();
+        }
+        function isTombstoned(type, key) {
+            return tombstones[type] && tombstones[type][key] != null;
+        }
+
         let cart = loadState(STORAGE_KEYS.cart, []);
         let orders = loadState(STORAGE_KEYS.orders, []);
         let favorites = loadState(STORAGE_KEYS.favorites, []);
@@ -2453,8 +2474,9 @@
             pushInFlight = true;
             try {
                 const payload = {
-                    v: 2,
+                    v: 3,
                     cart, orders, favorites, customDishes,
+                    tombstones,
                     updatedAt: new Date().toISOString()
                 };
                 const res = await fetch(BIN_URL, {
@@ -2486,15 +2508,56 @@
             }
         }
 
-        // 幂等合并：orders 按 id 取并集、favorites 取并集、cart 按 name 取并集且 qty 取较大值
+        // 幂等合并：先合并远端墓碑并清理本地数据，再按并集新增
         function mergeFromRemote(remote) {
             if (!remote) return false;
             isMerging = true;
             let changed = false;
 
+            // 1. 合并远端墓碑（取并集，时间戳取较大值）
+            if (remote.tombstones && typeof remote.tombstones === 'object') {
+                for (const type of ['orders', 'dishes', 'carts']) {
+                    if (!remote.tombstones[type]) continue;
+                    if (!tombstones[type]) tombstones[type] = {};
+                    let tombChanged = false;
+                    for (const [key, ts] of Object.entries(remote.tombstones[type])) {
+                        if (!tombstones[type][key] || ts > tombstones[type][key]) {
+                            tombstones[type][key] = ts;
+                            tombChanged = true;
+                        }
+                    }
+                    if (tombChanged) {
+                        try { localStorage.setItem(STORAGE_KEYS.tombstones, JSON.stringify(tombstones)); } catch(e) {}
+                    }
+                }
+            }
+
+            // 2. 根据墓碑清理本地数据（远端删除了，本地也要删除）
+            const ordersBefore = orders.length;
+            orders = orders.filter(o => !isTombstoned('orders', o.id));
+            if (orders.length !== ordersBefore) {
+                saveState(STORAGE_KEYS.orders, orders);
+                changed = true;
+            }
+
+            const dishesBefore = customDishes.length;
+            customDishes = customDishes.filter(d => !isTombstoned('dishes', d.name));
+            if (customDishes.length !== dishesBefore) {
+                saveCustomDishes(customDishes);
+                changed = true;
+            }
+
+            const cartBefore = cart.length;
+            cart = cart.filter(c => !isTombstoned('carts', c.name));
+            if (cart.length !== cartBefore) {
+                saveState(STORAGE_KEYS.cart, cart);
+                changed = true;
+            }
+
+            // 3. 并集合并远端新增数据（跳过墓碑标记的项）
             if (Array.isArray(remote.orders)) {
                 const localIds = new Set(orders.map(o => o.id));
-                const newOnes = remote.orders.filter(o => !localIds.has(o.id));
+                const newOnes = remote.orders.filter(o => !localIds.has(o.id) && !isTombstoned('orders', o.id));
                 if (newOnes.length > 0) {
                     orders = orders.concat(newOnes);
                     orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -2506,7 +2569,13 @@
             if (Array.isArray(remote.favorites)) {
                 const localSet = new Set(favorites);
                 const before = favorites.length;
-                remote.favorites.forEach(n => { if (!localSet.has(n)) { favorites.push(n); localSet.add(n); } });
+                remote.favorites.forEach(n => {
+                    // 收藏夹中已删除的菜品不再合并回来
+                    if (!localSet.has(n) && !isTombstoned('dishes', n)) {
+                        favorites.push(n);
+                        localSet.add(n);
+                    }
+                });
                 if (favorites.length !== before) {
                     saveState(STORAGE_KEYS.favorites, favorites);
                     changed = true;
@@ -2516,6 +2585,7 @@
             if (Array.isArray(remote.cart)) {
                 let cartChanged = false;
                 remote.cart.forEach(r => {
+                    if (isTombstoned('carts', r.name)) return; // 跳过已删除的
                     const local = cart.find(c => c.name === r.name);
                     if (!local) { cart.push({ name: r.name, img: r.img, qty: r.qty }); cartChanged = true; }
                     else if (r.qty > local.qty) { local.qty = r.qty; cartChanged = true; }
@@ -2526,12 +2596,12 @@
                 }
             }
 
-            // 自定义菜品：按 name 取并集
+            // 自定义菜品：按 name 取并集（跳过墓碑标记的）
             if (Array.isArray(remote.customDishes) && remote.customDishes.length > 0) {
                 const localNames = new Set(customDishes.map(d => d.name));
                 let newCount = 0;
                 remote.customDishes.forEach(d => {
-                    if (d && d.name && !localNames.has(d.name)) {
+                    if (d && d.name && !localNames.has(d.name) && !isTombstoned('dishes', d.name)) {
                         customDishes.push({
                             name: d.name,
                             type: d.type || 'meat',
@@ -2739,6 +2809,11 @@
             const existing = cart.find(it => it.name === name);
             if (existing) existing.qty += 1;
             else cart.push({ name: dish.name, img: dish.img, qty: 1 });
+            // 清除购物车墓碑，允许重新添加
+            if (tombstones.carts && tombstones.carts[name]) {
+                delete tombstones.carts[name];
+                try { localStorage.setItem(STORAGE_KEYS.tombstones, JSON.stringify(tombstones)); } catch(e) {}
+            }
             saveState(STORAGE_KEYS.cart, cart);
             updateBadges();
             renderMenu();
@@ -2760,6 +2835,7 @@
         function removeFromCart(name) {
             cart = cart.filter(it => it.name !== name);
             saveState(STORAGE_KEYS.cart, cart);
+            recordTombstone('carts', name); // 记录墓碑，防止同步时复活
             updateBadges();
             renderCart();
             renderMenu();
@@ -2769,6 +2845,8 @@
         function clearCart() {
             if (cart.length === 0) { showToast('点菜清单已经是空的'); return; }
             if (!confirm('确定清空所有已选菜品吗？')) return;
+            // 为每个被清空的菜品记录墓碑
+            cart.forEach(it => recordTombstone('carts', it.name));
             cart = [];
             saveState(STORAGE_KEYS.cart, cart);
             updateBadges();
@@ -2822,6 +2900,7 @@
             if (!confirm(`确认删除此订单？\n时间：${formatDateTime(order.createdAt)}\n共 ${order.items.length} 道菜 / ${total} 份\n\n删除后不可恢复。`)) return;
             orders = orders.filter(o => o.id !== orderId);
             saveState(STORAGE_KEYS.orders, orders);
+            recordTombstone('orders', orderId); // 记录墓碑，防止同步时复活
             renderOrders();
             showToast('🗑 订单已删除');
         }
