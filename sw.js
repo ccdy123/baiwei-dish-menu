@@ -1,5 +1,5 @@
 // Service Worker for 百道家常菜菜单大全
-const CACHE_NAME = 'baiwei-dish-v5';
+const CACHE_NAME = 'baiwei-dish-v6';
 const PRECACHE_URLS = [
     './',
     './index.html',

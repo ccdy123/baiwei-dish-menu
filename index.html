@@ -19,15 +19,56 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+        }
+
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                         "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: 0.01em;
+            color: #1d1d1f;
         }
 
         body {
-            background: linear-gradient(135deg, #fef9f3 0%, #f5ebe0 100%);
             min-height: 100vh;
             padding: 0;
             padding-bottom: calc(64px + env(safe-area-inset-bottom));
+            position: relative;
+            overflow-x: hidden;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 0%, rgba(255, 180, 160, 0.35) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 90% 10%, rgba(170, 200, 255, 0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 50% 100%, rgba(255, 220, 170, 0.3) 0%, transparent 60%),
+                linear-gradient(180deg, #fbf9f6 0%, #f5efe8 40%, #eef3f8 100%);
+            background-attachment: fixed;
         }
+        /* 浮动彩色光斑，Apple官网常见氛围 */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            width: 520px; height: 520px;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatAura 22s ease-in-out infinite alternate;
+        }
+        body::before {
+            background: radial-gradient(circle, #ff9a9e 0%, transparent 70%);
+            top: -150px; left: -150px;
+        }
+        body::after {
+            background: radial-gradient(circle, #a8c0ff 0%, transparent 70%);
+            bottom: -200px; right: -200px;
+            animation-delay: -10s;
+        }
+        @keyframes floatAura {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(70px, 50px) scale(1.15); }
+        }
+        body > * { position: relative; z-index: 1; }
 
         /* 顶部横幅 */
         .hero {
@@ -513,6 +554,31 @@
         }
         .fav-btn:hover { background: rgba(0,0,0,0.7); transform: scale(1.1); }
         .fav-btn.active { background: rgba(231,76,60,0.95); }
+
+        /* 自创菜删除按钮（和自定义 tag 并排，在 tag 右边） */
+        .del-dish-btn {
+            position: absolute;
+            top: 12px;
+            left: auto;
+            right: 52px; /* 离收藏按钮有间距，避免点错 */
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 70, 70, 0.85);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 5;
+            line-height: 1;
+        }
+        .del-dish-btn:hover { background: #e53935; transform: scale(1.15) rotate(-5deg); }
 
         /* 卡片底部操作行 */
         .dish-actions {
@@ -1061,6 +1127,492 @@
             box-shadow: 0 2px 6px rgba(39,174,96,0.35);
             z-index: 2;
         }
+
+        /* ===============================================================
+           Apple 风 · 玻璃朦胧质感  全局覆盖样式
+           =============================================================== */
+
+        /* --- 顶部 Hero 横幅：更柔和渐变 + 细边框 + 苹果风标题排版 --- */
+        .hero {
+            background:
+                radial-gradient(ellipse 70% 80% at 15% 20%, rgba(255, 180, 120, 0.4) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 70% at 85% 30%, rgba(255, 100, 130, 0.35) 0%, transparent 55%),
+                linear-gradient(135deg, #e63946 0%, #f48c06 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+            padding: 56px 20px 48px;
+        }
+        .hero h1 {
+            font-size: clamp(28px, 4.5vw, 46px);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.15;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .hero p {
+            font-size: clamp(14px, 2vw, 17px);
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            opacity: 0.92;
+        }
+        .count-badge {
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 20px;
+            border-radius: 980px;  /* Apple 胶囊标准值 */
+            margin-top: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .sync-btn {
+            background: rgba(255,255,255,0.16);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.28);
+            color: white;
+            font-weight: 500;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 980px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sync-btn:hover { background: rgba(255,255,255,0.28); transform: translateY(-1px); }
+
+        /* --- 搜索框：玻璃卡片 + Apple 胶囊 --- */
+        .search-box {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            padding: 14px 22px 14px 54px;
+            border-radius: 980px;
+            font-size: 15px;
+            color: #1d1d1f;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .search-box::placeholder { color: #86868b; }
+        .search-box:focus {
+            outline: none;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 10px 40px rgba(230, 57, 70, 0.12), 0 1px 3px rgba(0,0,0,0.05);
+            border-color: rgba(230, 57, 70, 0.4);
+        }
+        .search-icon { color: #86868b; left: 40px; font-size: 18px; }
+
+        /* --- 分类筛选按钮：Apple 胶囊 Pill Button --- */
+        .filter-btn {
+            padding: 8px 20px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            color: #1d1d1f;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.9);
+            border-color: rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .filter-btn.active {
+            background: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(29,29,31,0.28);
+        }
+
+        /* --- 新增菜品按钮：Apple 绿色圆角胶囊 --- */
+        .add-dish-btn {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            color: #1d1d1f;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 980px;
+            font-weight: 600;
+            padding: 10px 22px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .add-dish-btn:hover {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+        }
+
+        /* --- 菜品卡片：Glass Card 玻璃质感，Apple 简洁风 --- */
+        .dish-card {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: saturate(180%) blur(22px);
+            -webkit-backdrop-filter: saturate(180%) blur(22px);
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+        .dish-card:hover {
+            transform: translateY(-8px) scale(1.015);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.12), 0 6px 18px rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.82);
+            border-color: rgba(255,255,255,0.9);
+        }
+        .dish-img-wrapper {
+            border-radius: 0;
+        }
+        .dish-img {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .dish-card:hover .dish-img { transform: scale(1.06); }
+        .dish-info { padding: 18px 18px 16px; }
+        .dish-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1d1d1f;
+            letter-spacing: 0.01em;
+            margin-bottom: 6px;
+        }
+        .dish-desc-short {
+            font-size: 13px;
+            color: #6e6e73;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+            min-height: 39px;
+        }
+        .dish-type-tag {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 980px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        /* 卡片按钮：查看详情 / 点菜 */
+        .view-detail {
+            color: #86868b;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .dish-card:hover .view-detail { color: #e63946; }
+        .add-cart-btn {
+            background: rgba(29,29,31,0.06);
+            color: #1d1d1f;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .add-cart-btn:hover {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            box-shadow: 0 6px 18px rgba(230,57,70,0.3);
+        }
+        .add-cart-btn.in-cart {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+        }
+
+        /* --- 详情弹窗 玻璃化 --- */
+        .modal-overlay { background: rgba(29,29,31,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .modal-content {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(28px);
+            -webkit-backdrop-filter: saturate(180%) blur(28px);
+            border: 1px solid rgba(255,255,255,0.85);
+            border-radius: 26px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.22);
+            animation: glassIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes glassIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-close { color: #86868b; font-size: 30px; }
+        .modal-close:hover { color: #e63946; }
+        .modal-category { color: #e63946; font-weight: 600; font-size: 13px; letter-spacing: 0.06em; }
+        .modal-title { font-size: 28px; font-weight: 700; color: #1d1d1f; }
+        .modal-section-title { color: #1d1d1f; font-weight: 600; font-size: 14px; }
+        .modal-desc, .modal-tips { color: #424245; line-height: 1.8; font-size: 14.5px; }
+        .modal-actions button {
+            border-radius: 980px;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(29,29,31,0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-actions button:hover { background: rgba(29,29,31,0.1); }
+        .modal-actions .in-cart { background: linear-gradient(135deg, #10b981, #34d399); color: white; border-color: transparent; }
+        .modal-actions .active-fav { background: linear-gradient(135deg, #e63946, #f77f00); color: white; border-color: transparent; }
+
+        /* --- 视图标题 (view-header)：简洁排版 --- */
+        .view-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            letter-spacing: 0.01em;
+        }
+        .view-subtitle { color: #86868b; font-size: 14px; margin-top: 6px; }
+
+        /* --- 购物车/订单卡片 玻璃化 --- */
+        .cart-item {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,0.75);
+            border-radius: 20px;
+            padding: 14px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            transition: all 0.25s;
+        }
+        .cart-item:hover { background: rgba(255,255,255,0.85); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .qty-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(29,29,31,0.06);
+            color: #1d1d1f;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .qty-btn:hover { background: #e63946; color: white; }
+        .cart-remove {
+            background: rgba(230, 57, 70, 0.12);
+            color: #e63946;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: none;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cart-remove:hover { background: #e63946; color: white; transform: rotate(90deg) scale(1.1); }
+
+        /* ---- 订单卡片 ---- */
+        .order-card {
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,0.75);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 10px 32px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+        .order-card:hover { background: rgba(255,255,255,0.85); transform: translateY(-3px); }
+        .order-header { border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .order-time { color: #1d1d1f; font-weight: 600; font-size: 14.5px; }
+        .order-total { color: #e63946; font-weight: 700; font-size: 14px; }
+        .order-item {
+            background: rgba(0,0,0,0.03);
+            border-radius: 14px;
+            padding: 8px 10px;
+            transition: background 0.2s;
+        }
+        .order-item:hover { background: rgba(0,0,0,0.06); }
+        .order-item-name { color: #1d1d1f; font-weight: 500; }
+        .order-item-qty { color: #e63946; font-weight: 700; }
+        .order-reorder {
+            margin-top: 14px;
+            background: rgba(29,29,31,0.04);
+            color: #1d1d1f;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 8px 20px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .order-reorder:hover {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 18px rgba(230,57,70,0.3);
+        }
+
+        /* --- 底部导航：Apple 官网毛玻璃 nav --- */
+        .bottom-nav {
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: saturate(180%) blur(26px);
+            -webkit-backdrop-filter: saturate(180%) blur(26px);
+            border-top: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.06);
+        }
+        .nav-item {
+            color: #86868b;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-item:hover { color: #1d1d1f; }
+        .nav-item.active {
+            color: #e63946;
+            font-weight: 600;
+            transform: translateY(-2px);
+        }
+        .nav-badge {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(230,57,70,0.4);
+        }
+
+        /* --- 主操作按钮（结账/清空/提交导入等）Apple 胶囊按钮 --- */
+        .checkout-btn, .clear-cart-btn, .sync-import-btn, .sync-copy-btn, .sync-gen-btn, .ad-input, #adSubmit {
+            border-radius: 980px !important;
+        }
+        .checkout-btn {
+            background: linear-gradient(135deg, #e63946 0%, #f77f00 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 980px;
+            box-shadow: 0 10px 30px rgba(230,57,70,0.3);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(230,57,70,0.42); }
+        .checkout-btn:active { transform: translateY(0); }
+        .clear-cart-btn {
+            background: rgba(29,29,31,0.05);
+            color: #1d1d1f;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 14px 24px;
+            font-weight: 600;
+            border-radius: 980px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .clear-cart-btn:hover { background: rgba(230,57,70,0.1); color: #e63946; border-color: rgba(230,57,70,0.3); }
+
+        /* --- 同步 / 新增菜品 弹窗 玻璃化 --- */
+        .sync-overlay, .add-dish-overlay {
+            background: rgba(29,29,31,0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .sync-modal, .add-dish-modal {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(28px);
+            -webkit-backdrop-filter: saturate(180%) blur(28px);
+            border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 26px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.22);
+            animation: glassIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .sync-modal h2, .add-dish-modal h2 { color: #1d1d1f; }
+        .sync-subtitle { color: #86868b; }
+        .sync-section-title { color: #1d1d1f; font-weight: 600; font-size: 14px; letter-spacing: 0.02em; }
+        .sync-section-hint { color: #86868b; font-size: 12.5px; line-height: 1.5; }
+        .sync-stats {
+            background: rgba(29,29,31,0.03);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: #424245;
+            line-height: 1.9;
+            font-size: 14px;
+        }
+        .sync-url-input, .sync-textarea, .ad-input {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.08);
+            color: #1d1d1f;
+            border-radius: 14px;
+            transition: all 0.2s;
+            font-size: 14.5px;
+        }
+        .sync-url-input:focus, .sync-textarea:focus, .ad-input:focus {
+            border-color: rgba(230,57,70,0.5);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(230,57,70,0.1);
+        }
+        .sync-import-btn, #adSubmit {
+            background: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            font-weight: 600;
+            font-size: 14.5px;
+            cursor: pointer;
+            border-radius: 980px !important;
+            box-shadow: 0 8px 24px rgba(29,29,31,0.28);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sync-import-btn:hover, #adSubmit:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(29,29,31,0.36); }
+        .sync-copy-btn, .sync-gen-btn {
+            background: rgba(29,29,31,0.06);
+            color: #1d1d1f;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 980px !important;
+            font-weight: 600;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sync-copy-btn:hover:not(:disabled), .sync-gen-btn:hover { background: rgba(29,29,31,0.12); }
+        .ad-preview { transition: all 0.25s; }
+        .ad-preview:hover { border-color: #e63946; background: #fff5f5; }
+
+        /* --- Toast 提示 玻璃化 --- */
+        .toast {
+            background: rgba(29,29,31,0.82);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            color: white;
+            font-weight: 500;
+            border-radius: 980px;
+            padding: 12px 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        /* 空状态 玻璃卡 */
+        .empty-state {
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: saturate(180%) blur(16px);
+            -webkit-backdrop-filter: saturate(180%) blur(16px);
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 24px;
+            padding: 60px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+        .empty-icon { font-size: 64px; }
+        .empty-text { color: #1d1d1f; font-weight: 600; font-size: 17px; }
+        .empty-hint { color: #86868b; }
+
+        /* 响应式微调 */
+        @media (max-width: 600px) {
+            .hero { padding: 44px 16px 38px; }
+            .dish-card { border-radius: 18px; }
+            .modal-content, .sync-modal, .add-dish-modal { border-radius: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -1445,7 +1997,7 @@
                     <div class="dish-img-wrapper">
                         <img class="dish-img" src="${item.img}" alt="${item.name}" onerror="this.onerror=null;this.src='${IMG_FALLBACK}';">
                         <span class="dish-type-tag">${item.category}</span>
-                        ${isCustom ? '<span class="dish-custom-tag">✦ 自创</span>' : ''}
+                        ${isCustom ? '<span class="dish-custom-tag">✦ 自创</span><button class="del-dish-btn" data-action="del-dish" data-name="' + item.name + '" title="删除自创菜">🗑</button>' : ''}
                         <button class="fav-btn ${fav ? 'active' : ''}" data-action="fav" data-name="${item.name}" title="${fav ? '取消收藏' : '收藏'}">${fav ? '❤' : '♡'}</button>
                     </div>
                     <div class="dish-info">
@@ -1462,11 +2014,42 @@
             `;
         }
 
-        // 绑定卡片区域事件（事件委托：收藏 / 加车 / 查看详情）
+        // 删除自定义菜品（不能删除内置菜）
+        function deleteCustomDish(name) {
+            const dish = customDishes.find(d => d.name === name);
+            if (!dish) return;
+            if (!confirm(`确认删除自创菜品「${name}」？\n\n⚠ 删除后无法恢复，同时其他设备也会移除。`)) return;
+            customDishes = customDishes.filter(d => d.name !== name);
+            saveCustomDishes(customDishes);
+            // 若在收藏夹则同步移除
+            if (favorites.includes(name)) {
+                favorites = favorites.filter(n => n !== name);
+                saveState(STORAGE_KEYS.favorites, favorites);
+            }
+            // 若在购物车也移除
+            if (cart.find(c => c.name === name)) {
+                cart = cart.filter(c => c.name !== name);
+                saveState(STORAGE_KEYS.cart, cart);
+            }
+            updateBadges();
+            updateCountBadge();
+            renderMenu();
+            if (document.getElementById('viewCart').classList.contains('active')) renderCart();
+            if (document.getElementById('viewFavorites').classList.contains('active')) renderFavorites();
+            showToast(`🗑 已删除「${name}」`);
+        }
+
+        // 绑定卡片区域事件（事件委托：收藏 / 加车 / 删除自创菜 / 查看详情）
         function bindCardEvents(container) {
             container.addEventListener('click', (e) => {
                 const favBtn = e.target.closest('[data-action="fav"]');
                 const addBtn = e.target.closest('[data-action="add-cart"]');
+                const delBtn = e.target.closest('[data-action="del-dish"]');
+                if (delBtn) {
+                    e.stopPropagation();
+                    deleteCustomDish(delBtn.dataset.name);
+                    return;
+                }
                 if (favBtn) {
                     e.stopPropagation();
                     toggleFavorite(favBtn.dataset.name);
