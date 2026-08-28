@@ -1613,6 +1613,243 @@
             .dish-card { border-radius: 18px; }
             .modal-content, .sync-modal, .add-dish-modal { border-radius: 20px; }
         }
+
+        /* ===============================================================
+           Apple 风 · 第二轮精细化（内部子元素 / 交互细节）
+           =============================================================== */
+
+        /* 全局滚动条：Apple 细滚动条 */
+        *::-webkit-scrollbar { width: 8px; height: 8px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.18);
+            border-radius: 980px;
+        }
+        *::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.32); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.18) transparent; }
+
+        /* 搜索容器居中 */
+        .search-container { max-width: 680px; margin: 22px auto 16px; }
+
+        /* filter-bar 间距微调 */
+        .filter-bar { gap: 8px 10px; padding-bottom: 4px; }
+
+        /* --- 购物车子元素 --- */
+        .cart-item img {
+            width: 72px; height: 72px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name {
+            font-size: 15.5px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 10px;
+        }
+        .qty-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-btn {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(29,29,31,0.07);
+            color: #1d1d1f;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .qty-btn:hover {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            transform: scale(1.1);
+        }
+        .qty-btn:active { transform: scale(0.92); }
+        .qty-num {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1d1d1f;
+            min-width: 24px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .cart-remove {
+            background: rgba(230,57,70,0.1);
+            color: #e63946;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cart-remove:hover { background: #e63946; color: white; transform: rotate(90deg) scale(1.1); }
+
+        /* --- 购物车底部栏：粘性玻璃栏 --- */
+        .cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: saturate(180%) blur(24px);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            border-top: 1px solid rgba(255,255,255,0.7);
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+            margin: 24px auto 0;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.06);
+            z-index: 5;
+        }
+        .checkout-btn:disabled {
+            background: rgba(29,29,31,0.08);
+            color: rgba(29,29,31,0.4);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- 订单子元素 --- */
+        .order-items { gap: 8px; margin-top: 4px; }
+        .order-item {
+            background: rgba(29,29,31,0.04);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 12px;
+            padding: 6px 12px 6px 6px;
+            transition: all 0.2s;
+        }
+        .order-item:hover { background: rgba(29,29,31,0.07); }
+        .order-item img {
+            width: 34px; height: 34px;
+            border-radius: 9px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .order-item-name { font-size: 13px; color: #1d1d1f; font-weight: 500; }
+        .order-item-qty { font-size: 12.5px; color: #e63946; font-weight: 700; }
+        .order-total {
+            background: linear-gradient(135deg, rgba(230,57,70,0.12), rgba(247,127,0,0.12));
+            color: #e63946;
+            border: 1px solid rgba(230,57,70,0.15);
+            padding: 4px 14px;
+            border-radius: 980px;
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+        /* 订单删除按钮玻璃化 */
+        .order-delete {
+            background: rgba(230,57,70,0.12);
+            border: 1px solid rgba(230,57,70,0.2);
+            color: #e63946;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 13px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .order-delete:hover {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            border-color: transparent;
+            transform: scale(1.12) rotate(-5deg);
+            box-shadow: 0 4px 14px rgba(230,57,70,0.4);
+        }
+
+        /* --- 详情弹窗底部按钮：主按钮占满，Apple 风 --- */
+        .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+        .modal-action-btn {
+            flex: 1;
+            padding: 13px;
+            border-radius: 980px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(29,29,31,0.04);
+            color: #1d1d1f;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-action-btn:hover { background: rgba(29,29,31,0.1); }
+        .modal-action-btn.primary {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(230,57,70,0.3);
+        }
+        .modal-action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(230,57,70,0.42); }
+        .modal-action-btn.active-fav {
+            background: linear-gradient(135deg, #e63946, #f77f00);
+            color: white;
+            border-color: transparent;
+        }
+        .modal-action-btn.in-cart {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 详情大图：顶部圆角 + 底部柔光过渡（让标题更易读） */
+        .modal-img {
+            height: 340px;
+            border-radius: 26px 26px 0 0;
+            -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+        }
+        .modal-body { padding: 8px 26px 28px; }
+        .modal-title { margin-top: 8px; }
+
+        /* --- 底部导航图标 + 激活指示器 --- */
+        .nav-item .nav-icon { font-size: 22px; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-item.active .nav-icon { transform: translateY(-2px) scale(1.12); }
+        .nav-item span:not(.nav-icon):not(.nav-badge) { font-size: 11px; font-weight: 500; letter-spacing: 0.02em; }
+        .nav-badge {
+            position: absolute;
+            top: 4px; right: 50%;
+            transform: translateX(20px);
+            min-width: 18px; height: 18px;
+            border-radius: 980px;
+            font-size: 11px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 5px;
+            border: 2px solid rgba(255,255,255,0.85);
+        }
+        .nav-item { position: relative; }
+
+        /* --- 页脚：玻璃细分隔 --- */
+        .footer {
+            text-align: center;
+            padding: 40px 20px 32px;
+            color: #86868b;
+            font-size: 13px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin-top: 30px;
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* 视图容器统一内边距，留出底部导航空间 */
+        .view { padding: 8px 0 calc(80px + env(safe-area-inset-bottom)); }
+        .view-header { padding: 0 4px; margin-bottom: 18px; }
+
+        /* 选中态过渡：所有可点击元素统一 */
+        .filter-btn, .nav-item, .dish-card, .cart-item, .order-card,
+        .modal-action-btn, .qty-btn, .add-cart-btn, .order-reorder,
+        .sync-btn, .add-dish-btn, .checkout-btn, .clear-cart-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 文本选中色 */
+        ::selection { background: rgba(230,57,70,0.2); color: #1d1d1f; }
+
+        /* 第二轮响应式 */
+        @media (max-width: 600px) {
+            .modal-img { height: 240px; }
+            .modal-body { padding: 8px 20px 24px; }
+            .cart-item img { width: 60px; height: 60px; }
+            .cart-footer { padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
+        }
     </style>
 </head>
 <body>
