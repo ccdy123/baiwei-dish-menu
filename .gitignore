@@ -1,6 +1,36 @@
+# 依赖
+node_modules/
+.pnp
+.pnp.js
+
+# 构建产物
+dist/
+dist-ssr/
+*.local
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器/系统
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 旧产物
 *.zip
 .trae-html-share-packages/
-*.log
 __pycache__/
-.DS_Store
 .git.bak/
+
+# 缓存
+.vite/
+.eslintcache

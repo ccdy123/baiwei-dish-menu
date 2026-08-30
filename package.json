@@ -1,0 +1,23 @@
+{
+  "name": "home-cooking-menu",
+  "private": false,
+  "version": "1.0.0",
+  "description": "在线家常菜点菜网页应用 —— 多级分类、智能筛选、数据同步、响应式界面",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "deploy": "vite build && gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "gh-pages": "^6.1.1",
+    "vite": "^5.4.6"
+  }
+}
